@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: "Inter", "SF Pro Display", system-ui, sans-serif;
+  --font-mono: "Source Code Pro", "SFMono-Regular", monospace;
+
+  /* Brand colors */
+  --color-brand-50: #e8f4fd;
+  --color-brand-100: #c5e2f9;
+  --color-brand-200: #8ec5f3;
+  --color-brand-300: #5aabe9;
+  --color-brand-400: #2a8fd4;
+  --color-brand-500: #1a6bb5;
+  --color-brand-600: #155a96;
+  --color-brand-700: #104878;
+  --color-brand-800: #0d1b2a;
+  --color-brand-900: #0a1628;
+
+  /* Navy */
+  --color-navy: #0d1b2a;
+  --color-navy-light: #1a2d42;
+  --color-navy-dark: #0a1628;
+
+  /* Surface */
+  --color-surface: #f8fafc;
+  --color-surface-hover: #f1f5f9;
+
+  /* Border */
+  --color-border: #e5edf5;
+  --color-border-active: #1a6bb5;
+
+  /* Text */
+  --color-heading: #0a1628;
+  --color-label: #273951;
+  --color-body: #64748d;
+  --color-muted: #94a3b8;
+
+  /* Status */
+  --color-success: #15be53;
+  --color-success-text: #108c3d;
+  --color-warning: #f59e0b;
+  --color-warning-text: #9b6829;
+  --color-error: #ea2261;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 8px;
+
+  /* Shadows */
+  --shadow-ambient: rgba(23,23,23,0.06) 0px 3px 6px;
+  --shadow-standard: rgba(23,23,23,0.08) 0px 15px 35px;
+  --shadow-elevated: rgba(50,50,93,0.25) 0px 30px 45px -30px, rgba(0,0,0,0.1) 0px 18px 36px -18px;
+  --shadow-deep: rgba(3,3,39,0.25) 0px 14px 21px -14px, rgba(0,0,0,0.1) 0px 8px 17px -8px;
+
+  /* Letter spacing */
+  --tracking-display: -0.96px;
+  --tracking-heading: -0.64px;
+  --tracking-subheading: -0.22px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --brand-500: #1a6bb5;
+    --brand-600: #155a96;
+    --brand-800: #0d1b2a;
+    --brand-900: #0a1628;
+    --color-heading: #0a1628;
+    --color-body: #64748d;
+    --color-border: #e5edf5;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-heading);
+    font-weight: 300;
+  }
+
+  h1 {
+    font-size: 3rem;
+    letter-spacing: -0.96px;
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: 2rem;
+    letter-spacing: -0.64px;
+    line-height: 1.1;
+  }
+
+  h3 {
+    font-size: 1.375rem;
+    letter-spacing: -0.22px;
+    line-height: 1.1;
+  }
 }
