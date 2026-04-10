@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { QuoteCartButton } from "./quote-cart-button";
 
 const navLinks = [
   { href: "/products", label: "Products" },
@@ -28,6 +29,7 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            <QuoteCartButton />
             <Link href="/quote" className="px-4 py-2 text-white text-sm rounded-[4px] transition-colors" style={{ backgroundColor: "#1a6bb5" }}>
               Get a Quote
             </Link>
