@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AddToQuoteButton } from "@/components/public/add-to-quote-button";
 import { addToCart } from "@/lib/quote-cart";
@@ -18,6 +18,14 @@ interface Product {
 }
 
 export default function ComparePage() {
+  return (
+    <Suspense fallback={<div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 text-center"><p style={{ color: "#64748d" }}>Loading comparison...</p></div>}>
+      <CompareContent />
+    </Suspense>
+  );
+}
+
+function CompareContent() {
   const searchParams = useSearchParams();
   const ids = searchParams.get("ids")?.split(",").filter(Boolean) || [];
   const [products, setProducts] = useState<Product[]>([]);
