@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, buildQuoteConfirmationEmail } from "@/lib/email";
 import { generateWhatsAppNotification, sendWhatsAppNotification } from "@/lib/whatsapp";
 
@@ -10,7 +10,7 @@ interface QuoteItem {
 }
 
 export async function submitQuote(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const contactName = formData.get("contact_name") as string;
   const contactEmail = formData.get("contact_email") as string;
