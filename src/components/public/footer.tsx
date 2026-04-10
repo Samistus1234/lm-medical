@@ -76,6 +76,11 @@ export function Footer() {
         <div className="mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
             &copy; {new Date().getFullYear()} L&M Medical Solutions. All rights reserved.
+            <span className="mx-1">|</span>
+            Built by{" "}
+            <a href="https://www.elabifytechnologies.com/" target="_blank" rel="noopener noreferrer" className="underline transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Elabify Technologies
+            </a>
           </p>
 
           {/* Back to top */}
