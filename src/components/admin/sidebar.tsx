@@ -22,9 +22,7 @@ export function Sidebar() {
   return (
     <aside className="w-64 min-h-screen flex flex-col" style={{ backgroundColor: "#0d1b2a" }}>
       <div className="px-6 py-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-        <h2 className="text-lg font-light text-white" style={{ letterSpacing: "-0.22px" }}>
-          L&M Medical
-        </h2>
+        <img src="/logo.jpeg" alt="L&M Medical Solutions" className="h-10 w-auto mb-1" />
         <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>CRM Dashboard</p>
       </div>
 

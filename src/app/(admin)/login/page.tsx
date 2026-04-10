@@ -25,9 +25,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl tracking-[-0.64px] text-[#0a1628] font-light">
-            L&M Medical
-          </h1>
+          <img src="/logo.jpeg" alt="L&M Medical Solutions" className="h-16 w-auto mx-auto mb-4" />
           <p className="text-[#64748d] mt-2">Sign in to your account</p>
         </div>
 

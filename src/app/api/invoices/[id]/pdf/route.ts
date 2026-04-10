@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 export async function GET(
   request: Request,
@@ -33,6 +35,12 @@ export async function GET(
     cancelled: { label: "CANCELLED", gradient: "linear-gradient(135deg, #64748b, #475569)", glow: "rgba(100,116,139,0.3)" },
   };
   const status = statusMap[invoice.status] || statusMap.draft;
+
+  let logoBase64 = "";
+  try {
+    const logoPath = join(process.cwd(), "public", "logo.jpeg");
+    logoBase64 = readFileSync(logoPath).toString("base64");
+  } catch {}
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -635,7 +643,7 @@ export async function GET(
     <div class="header-mesh"></div>
     <div class="header-content">
       <div class="brand">
-        <div class="brand-icon"><span>L&amp;M</span></div>
+        ${logoBase64 ? `<img src="data:image/jpeg;base64,${logoBase64}" alt="L&M Medical Solutions" style="height:60px;width:auto;margin-right:16px;" />` : `<div class="brand-icon"><span>L&amp;M</span></div>`}
         <div>
           <h1>L&amp;M Medical Solutions</h1>
           <div class="tagline">Orthopedic Implants &amp; Surgical Systems</div>
@@ -772,7 +780,7 @@ export async function GET(
     <!-- Footer -->
     <div class="footer">
       <div class="footer-brand">
-        <div class="footer-icon"><span>L&amp;M</span></div>
+        ${logoBase64 ? `<img src="data:image/jpeg;base64,${logoBase64}" alt="L&M" style="height:32px;width:auto;margin-right:10px;" />` : `<div class="footer-icon"><span>L&amp;M</span></div>`}
         <div class="footer-text">
           <strong>L&amp;M Medical Solutions</strong><br>
           Premium Orthopedic Implants &amp; Surgical Supplies
