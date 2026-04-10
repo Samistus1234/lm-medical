@@ -1,8 +1,9 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+export function proxy(request: NextRequest) {
+  // Session refresh and auth protection handled in admin layout (server component)
+  // Proxy only handles cookie forwarding
+  return NextResponse.next();
 }
 
 export const config = {
