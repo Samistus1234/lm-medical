@@ -47,6 +47,7 @@ export default function InvoicesPage() {
                 <td className="px-4 py-3" style={{ color: "#0a1628" }}>{inv.total?.toLocaleString()} {inv.currency}</td>
                 <td className="px-4 py-3" style={{ color: "#94a3b8" }}>{new Date(inv.due_date).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
+                  <a href={`/api/invoices/${inv.id}/pdf`} target="_blank" className="text-xs px-2 py-1 rounded-[4px] mr-1" style={{ color: "#1a6bb5", border: "1px solid #e5edf5" }}>PDF</a>
                   {inv.status === "draft" && <button onClick={() => handleStatusChange(inv.id, "sent")} className="text-xs px-2 py-1 text-white rounded-[4px] mr-1" style={{ backgroundColor: "#1a6bb5" }}>Send</button>}
                   {inv.status === "sent" && <button onClick={() => handleStatusChange(inv.id, "paid")} className="text-xs px-2 py-1 text-white rounded-[4px]" style={{ backgroundColor: "#15be53" }}>Mark Paid</button>}
                 </td>
