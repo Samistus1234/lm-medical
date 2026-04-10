@@ -188,7 +188,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { src: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80", label: "Expert Medical Teams", aspect: "aspect-[3/4]" },
-              { src: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=600&q=80", label: "Precision Instruments", aspect: "aspect-[3/4] lg:mt-12" },
+              { src: "https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=600&q=80", label: "Precision Instruments", aspect: "aspect-[3/4] lg:mt-12" },
               { src: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600&q=80", label: "Patient-Centered Care", aspect: "aspect-[3/4]" },
               { src: "https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=600&q=80", label: "Advanced Equipment", aspect: "aspect-[3/4] lg:mt-12" },
             ].map((img, i) => (
