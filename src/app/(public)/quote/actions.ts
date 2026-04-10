@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { sendEmail, buildQuoteConfirmationEmail } from "@/lib/email";
+import { generateWhatsAppNotification, sendWhatsAppNotification } from "@/lib/whatsapp";
 
 interface QuoteItem {
   productId: string;
@@ -63,6 +65,33 @@ export async function submitQuote(formData: FormData) {
   if (itemsError) {
     return { error: "Failed to add items: " + itemsError.message };
   }
+
+  // Get product names for the confirmation email
+  const { data: quoteItemsWithProducts } = await supabase
+    .from("quote_items")
+    .select("quantity, products(item_name, variant)")
+    .eq("quote_id", quote.id);
+
+  const emailData = buildQuoteConfirmationEmail({
+    quoteNumber: quote.quote_number,
+    contactName: contactName,
+    items: (quoteItemsWithProducts || []).map((qi: any) => ({
+      name: qi.products?.item_name || "Product",
+      variant: qi.products?.variant,
+      quantity: qi.quantity,
+    })),
+  });
+  sendEmail({ to: contactEmail, ...emailData }).catch(console.error);
+
+  // Notify team via WhatsApp
+  const whatsappMsg = generateWhatsAppNotification({
+    quoteNumber: quote.quote_number,
+    contactName: contactName,
+    organization: organization,
+    itemCount: cartItems.length,
+    email: contactEmail,
+  });
+  sendWhatsAppNotification(whatsappMsg).catch(console.error);
 
   return { success: true, quoteNumber: quote.quote_number };
 }
