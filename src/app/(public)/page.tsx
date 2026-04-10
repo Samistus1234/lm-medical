@@ -188,9 +188,9 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { src: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80", label: "Expert Medical Teams", aspect: "aspect-[3/4]" },
-              { src: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=600&q=80", label: "Precision Instruments", aspect: "aspect-[3/4] lg:mt-12" },
+              { src: "https://images.unsplash.com/photo-1530497610245-b1bea7b129e4?w=600&q=80", label: "Precision Instruments", aspect: "aspect-[3/4] lg:mt-12" },
               { src: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600&q=80", label: "Patient-Centered Care", aspect: "aspect-[3/4]" },
-              { src: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&q=80", label: "Advanced Equipment", aspect: "aspect-[3/4] lg:mt-12" },
+              { src: "https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=600&q=80", label: "Advanced Equipment", aspect: "aspect-[3/4] lg:mt-12" },
             ].map((img, i) => (
               <FadeIn key={img.label} delay={0.1 * i} distance={50}>
                 <div className={`group relative overflow-hidden rounded-2xl ${img.aspect}`}>
@@ -430,7 +430,7 @@ export default async function HomePage() {
                   <FadeIn delay={0.5} direction="right">
                     <div className="absolute -bottom-8 -right-8 w-48 h-36 rounded-2xl overflow-hidden z-20" style={{ boxShadow: "rgba(3,3,39,0.25) 0px 20px 40px -10px", border: "3px solid white" }}>
                       <img
-                        src="https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400&q=80"
+                        src="https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=400&q=80"
                         alt="Medical equipment"
                         className="w-full h-full object-cover"
                       />
