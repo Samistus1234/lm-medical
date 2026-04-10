@@ -1,42 +1,43 @@
-// Email utility — logs to console in dev, ready for Resend/SMTP in production
+import nodemailer from "nodemailer";
 
 interface EmailOptions {
   to: string;
   subject: string;
   html: string;
+  from?: string;
 }
 
-export async function sendEmail(options: EmailOptions): Promise<boolean> {
-  const resendKey = process.env.RESEND_API_KEY;
+const transporter = nodemailer.createTransport({
+  host: "mail.privateemail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-  if (resendKey) {
-    try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "L&M Medical <noreply@lmmedical.com>",
-          to: options.to,
-          subject: options.subject,
-          html: options.html,
-        }),
-      });
-      return res.ok;
-    } catch (err) {
-      console.error("[Email] Send failed:", err);
-      return false;
-    }
+export async function sendEmail(options: EmailOptions): Promise<boolean> {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log("[Email] (dev mode — no SMTP credentials)");
+    console.log("[Email] To:", options.to);
+    console.log("[Email] Subject:", options.subject);
+    console.log("[Email] Body preview:", options.html.substring(0, 200));
+    return true;
   }
 
-  // Dev mode: log to console
-  console.log("[Email] (dev mode — no RESEND_API_KEY)");
-  console.log("[Email] To:", options.to);
-  console.log("[Email] Subject:", options.subject);
-  console.log("[Email] Body preview:", options.html.substring(0, 200));
-  return true;
+  try {
+    await transporter.sendMail({
+      from: options.from || `"L&M Medical Solutions" <${process.env.SMTP_USER}>`,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+    });
+    return true;
+  } catch (err) {
+    console.error("[Email] Send failed:", err);
+    return false;
+  }
 }
 
 export function buildQuoteConfirmationEmail(data: {
@@ -83,7 +84,7 @@ export function buildQuoteConfirmationEmail(data: {
 
   <div style="border-top:1px solid #e5edf5;margin-top:32px;padding-top:16px;text-align:center;">
     <p style="font-size:11px;color:#94a3b8;">L&M Medical Solutions — Premium Orthopedic Implants & Surgical Supplies</p>
-    <p style="font-size:11px;color:#94a3b8;">Khartoum, Sudan</p>
+    <p style="font-size:11px;color:#94a3b8;">Khartoum, Sudan | info@lmmedicalsolutions.org</p>
   </div>
 </body>
 </html>`,

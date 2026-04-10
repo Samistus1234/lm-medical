@@ -49,7 +49,7 @@ export default function LoginPage() {
                 type="email"
                 required
                 className="w-full px-3 py-2 border border-[#e5edf5] rounded-[4px] text-[#0a1628] focus:outline-none focus:border-[#1a6bb5] focus:ring-1 focus:ring-[#1a6bb5] placeholder:text-[#94a3b8]"
-                placeholder="you@lmmedical.com"
+                placeholder="you@lmmedicalsolutions.org"
               />
             </div>
 

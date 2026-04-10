@@ -641,7 +641,7 @@ export async function GET(
           <div class="tagline">Orthopedic Implants &amp; Surgical Systems</div>
           <div class="contact">
             Khartoum, Sudan<br>
-            info@lmmedical.com
+            info@lmmedicalsolutions.org
           </div>
         </div>
       </div>
@@ -765,7 +765,7 @@ export async function GET(
       <p>
         Payment is due within 30 days of the invoice date. Please include the invoice number as reference on all remittances.
         All prices are quoted in ${invoice.currency}. Goods remain the property of L&amp;M Medical Solutions until payment is received in full.
-        For queries regarding this invoice, please contact our accounts department at accounts@lmmedical.com.
+        For queries regarding this invoice, please contact our accounts department at ceo@lmmedicalsolutions.org.
       </p>
     </div>
 
