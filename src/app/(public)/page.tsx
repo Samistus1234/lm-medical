@@ -102,7 +102,7 @@ export default async function HomePage() {
       <section className="relative py-20" style={{ background: "#0d1b2a" }}>
         <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(26,107,181,0.05) 0%, rgba(42,143,212,0.1) 50%, rgba(26,107,181,0.05) 100%)" }} />
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x" style={{ divideColor: "rgba(255,255,255,0.06)" }}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x" style={{ "--tw-divide-opacity": "1" } as React.CSSProperties}>
             {[
               { value: 123, suffix: "+", label: "Product SKUs" },
               { value: 12, suffix: "", label: "Categories" },
