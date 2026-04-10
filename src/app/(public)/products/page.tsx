@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "Products",
+  description:
+    "Browse our catalog of orthopedic implants — screws, plates, nails, fixators, and surgical systems from leading manufacturers.",
+};
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/public/product-card";
 import { ProductFilters } from "@/components/public/product-filters";

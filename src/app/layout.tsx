@@ -18,9 +18,32 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "L&M Medical Solutions",
+  title: {
+    default: "L&M Medical Solutions — Orthopedic Implants & Surgical Supplies",
+    template: "%s | L&M Medical Solutions",
+  },
   description:
-    "Premium orthopedic implants and surgical supplies. Screws, plates, fixators, and complete systems for hospitals and surgeons.",
+    "Premium orthopedic implants and surgical supplies in Sudan. Screws, plates, fixators, nails, and complete systems for hospitals and surgeons.",
+  metadataBase: new URL("https://lmmedicalsolutions.org"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://lmmedicalsolutions.org",
+    siteName: "L&M Medical Solutions",
+    title: "L&M Medical Solutions — Orthopedic Implants & Surgical Supplies",
+    description:
+      "Premium orthopedic implants and surgical supplies in Sudan. Screws, plates, fixators, nails, and complete systems for hospitals and surgeons.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "L&M Medical Solutions",
+    description:
+      "Premium orthopedic implants and surgical supplies in Sudan.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

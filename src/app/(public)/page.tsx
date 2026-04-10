@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "L&M Medical Solutions — Orthopedic Implants & Surgical Supplies",
+  description:
+    "Sudan's trusted supplier of premium orthopedic implants, surgical screws, plates, fixators, and complete systems for hospitals and surgeons.",
+};
 import { createClient } from "@/lib/supabase/server";
 import {
   FadeIn,

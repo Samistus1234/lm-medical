@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -13,6 +14,23 @@ import {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: product } = await supabase
+    .from("products")
+    .select("item_name, category, notes")
+    .eq("item_code", slug)
+    .single();
+
+  if (!product) return { title: "Product Not Found" };
+
+  return {
+    title: product.item_name,
+    description: product.notes || `${product.item_name} — ${product.category}. Premium orthopedic implant from L&M Medical Solutions.`,
+  };
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {

@@ -1,9 +1,28 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: post } = await supabase
+    .from("blog_posts")
+    .select("title, excerpt")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .single();
+
+  if (!post) return { title: "Post Not Found" };
+
+  return {
+    title: post.title,
+    description: post.excerpt || `${post.title} — L&M Medical Solutions blog.`,
+  };
 }
 
 export default async function BlogPostPage({ params }: PageProps) {

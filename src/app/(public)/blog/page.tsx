@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Blog",
+  description:
+    "Insights on orthopedic surgery, implant technology, and surgical best practices from L&M Medical Solutions.",
+};
 
 export default async function BlogPage() {
   const supabase = await createClient();
