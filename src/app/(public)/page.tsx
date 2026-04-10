@@ -34,8 +34,18 @@ export default async function HomePage() {
           ═══════════════════════════════════════ */}
       <section
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        style={{ background: "linear-gradient(180deg, #020810 0%, #050d18 20%, #0a1628 50%, #0d1f3c 100%)" }}
+        style={{
+          background: "linear-gradient(180deg, rgba(2,8,16,0.92) 0%, rgba(5,13,24,0.88) 20%, rgba(10,22,40,0.85) 50%, rgba(13,31,60,0.9) 100%)",
+        }}
       >
+        {/* Background image */}
+        <img
+          src="https://images.unsplash.com/photo-1551190822-a9ce113ac100?w=1920&q=80"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.3) saturate(0.7)" }}
+        />
+
         {/* Animated grid with perspective */}
         <div className="absolute inset-0" style={{
           backgroundImage: "linear-gradient(rgba(42,143,212,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(42,143,212,0.07) 1px, transparent 1px)",
@@ -161,6 +171,47 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════
+          IMAGE SHOWCASE — Medical excellence
+          ═══════════════════════════════════════ */}
+      <section className="py-20 lg:py-28" style={{ background: "#ffffff" }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <FadeIn>
+            <div className="text-center mb-14">
+              <span className="text-[11px] tracking-[4px] uppercase" style={{ color: "#1a6bb5" }}>Excellence in Practice</span>
+              <h2 className="mt-4 text-4xl lg:text-5xl tracking-tight" style={{ color: "#0a1628", fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontWeight: 400 }}>
+                Empowering Surgical Teams
+              </h2>
+              <LineReveal delay={0.3} className="max-w-[120px] mx-auto mt-5" />
+            </div>
+          </FadeIn>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { src: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80", label: "Expert Medical Teams", aspect: "aspect-[3/4]" },
+              { src: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=600&q=80", label: "Precision Instruments", aspect: "aspect-[3/4] lg:mt-12" },
+              { src: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600&q=80", label: "Patient-Centered Care", aspect: "aspect-[3/4]" },
+              { src: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&q=80", label: "Advanced Equipment", aspect: "aspect-[3/4] lg:mt-12" },
+            ].map((img, i) => (
+              <FadeIn key={img.label} delay={0.1 * i} distance={50}>
+                <div className={`group relative overflow-hidden rounded-2xl ${img.aspect}`}>
+                  <img
+                    src={img.src}
+                    alt={img.label}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <p className="text-white text-sm font-medium">{img.label}</p>
+                    <div className="mt-2 w-8 h-[2px] bg-[#2a8fd4] transform origin-left group-hover:w-12 transition-all duration-500" />
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
           STATS — Animated counters
           ═══════════════════════════════════════ */}
       <section className="relative py-24" style={{ background: "linear-gradient(180deg, #0d1b2a, #0a1628)" }}>
@@ -253,6 +304,12 @@ export default async function HomePage() {
           CTA BANNER — Cinematic gradient
           ═══════════════════════════════════════ */}
       <section className="relative py-32 lg:py-40 overflow-hidden" style={{ background: "linear-gradient(135deg, #050d18 0%, #0a1628 30%, #0d1f3c 60%, #0a1628 100%)" }}>
+        <img
+          src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1920&q=80"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.15) saturate(0.5)" }}
+        />
         <FloatingParticles count={20} color="rgba(42,143,212,0.08)" />
         <GlowingOrb size={400} className="top-[20%] left-[10%] opacity-15" speed={10} />
         <GlowingOrb size={350} color1="#155a96" color2="transparent" className="bottom-[10%] right-[15%] opacity-10" speed={13} />
@@ -351,27 +408,36 @@ export default async function HomePage() {
             <FadeIn direction="right" delay={0.2}>
               <Parallax speed={-0.2}>
                 <div className="relative">
-                  {/* Main visual */}
+                  {/* Main image */}
                   <TiltCard intensity={5} className="relative z-10">
-                    <div className="aspect-[4/3] rounded-3xl overflow-hidden" style={{ background: "linear-gradient(145deg, #0d1b2a, #1a2d42)", boxShadow: "rgba(3,3,39,0.3) 0px 40px 80px -20px" }}>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="w-28 h-28 mx-auto rounded-3xl flex items-center justify-center mb-8 animate-[pulse_4s_ease-in-out_infinite]"
-                            style={{ background: "linear-gradient(135deg, rgba(26,107,181,0.15), rgba(42,143,212,0.08))", border: "1px solid rgba(42,143,212,0.15)" }}>
-                            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(42,143,212,0.5)" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                              <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" />
-                            </svg>
-                          </div>
-                          <p className="text-xl text-white/25" style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Premium Quality</p>
-                          <p className="text-[10px] mt-3 tracking-[3px] uppercase text-white/10">Surgical Precision</p>
-                        </div>
+                    <div className="aspect-[4/3] rounded-3xl overflow-hidden" style={{ boxShadow: "rgba(3,3,39,0.3) 0px 40px 80px -20px" }}>
+                      <img
+                        src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=800&q=80"
+                        alt="Medical professional"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/60 via-transparent to-[#0a1628]/20" />
+                      <div className="absolute bottom-6 left-6 right-6">
+                        <p className="text-lg text-white font-light" style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>
+                          Trusted by Surgeons
+                        </p>
+                        <p className="text-xs mt-1 tracking-[2px] uppercase text-white/50">Across Sudan & East Africa</p>
                       </div>
                     </div>
                   </TiltCard>
 
+                  {/* Secondary image — overlapping bottom-right */}
+                  <FadeIn delay={0.5} direction="right">
+                    <div className="absolute -bottom-8 -right-8 w-48 h-36 rounded-2xl overflow-hidden z-20" style={{ boxShadow: "rgba(3,3,39,0.25) 0px 20px 40px -10px", border: "3px solid white" }}>
+                      <img
+                        src="https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400&q=80"
+                        alt="Medical equipment"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </FadeIn>
+
                   {/* Decorative elements */}
-                  <div className="absolute -bottom-8 -right-8 w-40 h-40 rounded-3xl -z-10" style={{ background: "linear-gradient(135deg, rgba(26,107,181,0.08), rgba(42,143,212,0.04))" }} />
                   <div className="absolute -top-4 -left-4 w-20 h-20 rounded-2xl -z-10" style={{ background: "linear-gradient(135deg, rgba(26,107,181,0.06), transparent)" }} />
                 </div>
               </Parallax>
