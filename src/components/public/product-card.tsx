@@ -13,6 +13,7 @@ interface ProductCardProps {
     category: string;
     stock_qty: number;
     images: string[];
+    description: string | null;
   };
 }
 
@@ -151,6 +152,13 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.variant && (
             <p className="text-sm mt-1" style={{ color: "#64748d" }}>
               {product.variant}
+            </p>
+          )}
+
+          {/* Description preview */}
+          {product.description && (
+            <p className="text-xs mt-2 line-clamp-2 leading-relaxed" style={{ color: "#64748d" }}>
+              {product.description}
             </p>
           )}
 

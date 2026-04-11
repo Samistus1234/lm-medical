@@ -22,7 +22,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   // Build query
   let query = supabase
     .from("products")
-    .select("id, item_code, item_name, variant, category, stock_qty, images")
+    .select("id, item_code, item_name, variant, category, stock_qty, images, description")
     .eq("is_active", true)
     .order("category")
     .order("item_name");

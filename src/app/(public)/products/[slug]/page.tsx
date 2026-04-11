@@ -54,7 +54,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   // Get related products (same category, exclude current)
   const { data: related } = await supabase
     .from("products")
-    .select("id, item_code, item_name, variant, category, stock_qty, images")
+    .select("id, item_code, item_name, variant, category, stock_qty, images, description")
     .eq("category", product.category)
     .eq("is_active", true)
     .neq("id", product.id)
