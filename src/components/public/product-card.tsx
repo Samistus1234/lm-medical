@@ -88,37 +88,37 @@ export function ProductCard({ product }: ProductCardProps) {
             background: "linear-gradient(135deg, #0a1628 0%, #132040 50%, #0d1a30 100%)",
           }}
         >
-          {/* Decorative grid pattern */}
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-            }}
-          />
-          {/* Gradient glow */}
-          <div
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 rounded-full"
-            style={{
-              background: "radial-gradient(ellipse, rgba(26,107,181,0.2) 0%, transparent 70%)",
-              filter: "blur(30px)",
-            }}
-          />
-          {/* Product icon */}
-          <svg
-            width="56"
-            height="56"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="rgba(42,143,212,0.6)"
-            strokeWidth="0.8"
-            className="relative z-10 transition-transform duration-700 group-hover:rotate-[8deg] group-hover:scale-110"
-          >
-            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-            <line x1="12" y1="22.08" x2="12" y2="12" />
-          </svg>
+          {product.images && product.images.length > 0 ? (
+            <img
+              src={product.images[0]}
+              alt={product.item_name}
+              className="absolute inset-0 w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
+            />
+          ) : (
+            <>
+              <div
+                className="absolute inset-0 opacity-[0.04]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+                  backgroundSize: "32px 32px",
+                }}
+              />
+              <svg
+                width="56"
+                height="56"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgba(42,143,212,0.6)"
+                strokeWidth="0.8"
+                className="relative z-10"
+              >
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                <line x1="12" y1="22.08" x2="12" y2="12" />
+              </svg>
+            </>
+          )}
         </div>
 
         {/* Content */}
