@@ -40,6 +40,14 @@ export const metadata: Metadata = {
     description:
       "Premium orthopedic implants and surgical supplies in Sudan.",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
   robots: {
     index: true,
     follow: true,
