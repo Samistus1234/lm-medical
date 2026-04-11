@@ -1,7 +1,6 @@
-// Simple WhatsApp notification via wa.me deep link generation
-// For production: integrate Meta WhatsApp Cloud API
-
-const TEAM_WHATSAPP = process.env.WHATSAPP_PHONE_ID || "";
+const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID || "";
+const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN || "";
+const WHATSAPP_TEAM_NUMBER = process.env.WHATSAPP_TEAM_NUMBER || "";
 
 export function generateWhatsAppNotification(data: {
   quoteNumber: string;
@@ -10,24 +9,22 @@ export function generateWhatsAppNotification(data: {
   itemCount: number;
   email: string;
 }): string {
-  const message = [
-    `🔔 New Quote Request: ${data.quoteNumber}`,
-    `👤 ${data.contactName}${data.organization ? ` — ${data.organization}` : ""}`,
-    `📧 ${data.email}`,
-    `📦 ${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}`,
+  return [
+    `🔔 *New Quote Request: ${data.quoteNumber}*`,
     ``,
-    `Review in CRM: /admin/quotes`,
-  ].join("\n");
-
-  return message;
+    `👤 *Contact:* ${data.contactName}`,
+    data.organization ? `🏢 *Organization:* ${data.organization}` : null,
+    `📧 *Email:* ${data.email}`,
+    `📦 *Items:* ${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}`,
+    ``,
+    `Review in CRM: https://lmmedicalsolutions.org/admin/quotes`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export async function sendWhatsAppNotification(message: string): Promise<boolean> {
-  // If WhatsApp API credentials are set, use Meta Cloud API
-  const token = process.env.WHATSAPP_API_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_ID;
-
-  if (!token || !phoneId) {
+  if (!WHATSAPP_API_TOKEN || !WHATSAPP_PHONE_ID || !WHATSAPP_TEAM_NUMBER) {
     console.log("[WhatsApp] No API credentials — notification skipped");
     console.log("[WhatsApp] Message:", message);
     return false;
@@ -35,22 +32,30 @@ export async function sendWhatsAppNotification(message: string): Promise<boolean
 
   try {
     const res = await fetch(
-      `https://graph.facebook.com/v18.0/${phoneId}/messages`,
+      `https://graph.facebook.com/v21.0/${WHATSAPP_PHONE_ID}/messages`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${WHATSAPP_API_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
-          to: phoneId,
+          to: WHATSAPP_TEAM_NUMBER,
           type: "text",
           text: { body: message },
         }),
       }
     );
-    return res.ok;
+
+    if (!res.ok) {
+      const err = await res.json();
+      console.error("[WhatsApp] API error:", JSON.stringify(err));
+      return false;
+    }
+
+    console.log("[WhatsApp] Notification sent to", WHATSAPP_TEAM_NUMBER);
+    return true;
   } catch (err) {
     console.error("[WhatsApp] Send failed:", err);
     return false;
