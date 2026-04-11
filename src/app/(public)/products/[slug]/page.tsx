@@ -416,6 +416,23 @@ export default async function ProductDetailPage({ params }: PageProps) {
               </div>
             </FadeIn>
 
+            {/* Description */}
+            {product.description && (
+              <FadeIn direction="right" delay={0.45}>
+                <div className="mb-8">
+                  <h3
+                    className="text-lg font-medium mb-3"
+                    style={{ color: "#0a1628", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}
+                  >
+                    Product Description
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "#64748d" }}>
+                    {product.description}
+                  </p>
+                </div>
+              </FadeIn>
+            )}
+
             {/* Add to Quote */}
             <FadeIn direction="right" delay={0.5}>
               <Magnetic strength={0.15}>
