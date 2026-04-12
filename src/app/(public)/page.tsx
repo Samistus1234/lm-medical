@@ -86,31 +86,30 @@ export default async function HomePage() {
             </div>
           </FadeIn>
 
-          {/* Brand logo */}
-          <FadeIn delay={0.4} distance={60}>
-            <img
-              src="/logo.jpeg"
-              alt="L&M Medical Solutions"
-              className="h-16 sm:h-20 lg:h-24 w-auto mx-auto mb-6"
-            />
-          </FadeIn>
-
-          {/* Main headline with text reveal */}
-          <div className="text-5xl sm:text-7xl lg:text-[110px] text-white leading-[0.9] tracking-tight"
+          {/* Brand name — primary headline */}
+          <div className="text-5xl sm:text-7xl lg:text-[100px] text-white leading-[0.9] tracking-tight mb-6"
             style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontWeight: 400 }}>
-            <FadeIn delay={0.5} distance={80}>
-              <span className="block">Precision</span>
+            <FadeIn delay={0.4} distance={80}>
+              <span className="block">L&M Medical</span>
             </FadeIn>
-            <FadeIn delay={0.7} distance={80}>
+            <FadeIn delay={0.6} distance={80}>
               <span className="block" style={{
                 background: "linear-gradient(135deg, #ffffff 0%, #c5e2f9 40%, #2a8fd4 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}>
-                Orthopedics
+                Solutions
               </span>
             </FadeIn>
           </div>
+
+          {/* Tagline — smaller */}
+          <FadeIn delay={0.8} distance={40}>
+            <p className="text-xl sm:text-2xl lg:text-3xl text-white/60 tracking-wide"
+              style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontWeight: 300 }}>
+              Precision Orthopedics
+            </p>
+          </FadeIn>
 
           {/* Decorative line */}
           <LineReveal delay={1} className="max-w-[200px] mx-auto mt-8" />
