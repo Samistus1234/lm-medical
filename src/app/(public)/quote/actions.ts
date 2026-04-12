@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, buildQuoteConfirmationEmail } from "@/lib/email";
-import { generateWhatsAppNotification, sendWhatsAppNotification } from "@/lib/whatsapp";
+import { sendQuoteNotification } from "@/lib/whatsapp";
 
 interface QuoteItem {
   productId: string;
@@ -84,14 +84,13 @@ export async function submitQuote(formData: FormData) {
   sendEmail({ to: contactEmail, ...emailData }).catch(console.error);
 
   // Notify team via WhatsApp
-  const whatsappMsg = generateWhatsAppNotification({
+  sendQuoteNotification({
     quoteNumber: quote.quote_number,
     contactName: contactName,
     organization: organization,
-    itemCount: cartItems.length,
     email: contactEmail,
-  });
-  sendWhatsAppNotification(whatsappMsg).catch(console.error);
+    itemCount: cartItems.length,
+  }).catch(console.error);
 
   return { success: true, quoteNumber: quote.quote_number };
 }

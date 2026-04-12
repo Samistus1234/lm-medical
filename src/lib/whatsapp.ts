@@ -2,31 +2,9 @@ const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID || "";
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN || "";
 const WHATSAPP_TEAM_NUMBER = process.env.WHATSAPP_TEAM_NUMBER || "";
 
-export function generateWhatsAppNotification(data: {
-  quoteNumber: string;
-  contactName: string;
-  organization?: string | null;
-  itemCount: number;
-  email: string;
-}): string {
-  return [
-    `🔔 *New Quote Request: ${data.quoteNumber}*`,
-    ``,
-    `👤 *Contact:* ${data.contactName}`,
-    data.organization ? `🏢 *Organization:* ${data.organization}` : null,
-    `📧 *Email:* ${data.email}`,
-    `📦 *Items:* ${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}`,
-    ``,
-    `Review in CRM: https://lmmedicalsolutions.org/admin/quotes`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-export async function sendWhatsAppNotification(message: string): Promise<boolean> {
-  if (!WHATSAPP_API_TOKEN || !WHATSAPP_PHONE_ID || !WHATSAPP_TEAM_NUMBER) {
-    console.log("[WhatsApp] No API credentials — notification skipped");
-    console.log("[WhatsApp] Message:", message);
+async function sendWhatsAppAPI(to: string, payload: Record<string, unknown>): Promise<boolean> {
+  if (!WHATSAPP_API_TOKEN || !WHATSAPP_PHONE_ID) {
+    console.log("[WhatsApp] No API credentials — skipped");
     return false;
   }
 
@@ -41,9 +19,8 @@ export async function sendWhatsAppNotification(message: string): Promise<boolean
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
-          to: WHATSAPP_TEAM_NUMBER,
-          type: "text",
-          text: { body: message },
+          to,
+          ...payload,
         }),
       }
     );
@@ -54,10 +31,99 @@ export async function sendWhatsAppNotification(message: string): Promise<boolean
       return false;
     }
 
-    console.log("[WhatsApp] Notification sent to", WHATSAPP_TEAM_NUMBER);
+    console.log("[WhatsApp] Message sent to", to);
     return true;
   } catch (err) {
     console.error("[WhatsApp] Send failed:", err);
     return false;
   }
+}
+
+// Notify team (Dr. Ahmed) when a new RFQ comes in
+export async function sendQuoteNotification(data: {
+  quoteNumber: string;
+  contactName: string;
+  organization?: string | null;
+  email: string;
+  itemCount: number;
+}): Promise<boolean> {
+  if (!WHATSAPP_TEAM_NUMBER) return false;
+
+  return sendWhatsAppAPI(WHATSAPP_TEAM_NUMBER, {
+    type: "template",
+    template: {
+      name: "new_quote_request",
+      language: { code: "en_US" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: data.quoteNumber },
+            { type: "text", text: data.contactName },
+            { type: "text", text: data.organization || "N/A" },
+            { type: "text", text: data.email },
+            { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
+          ],
+        },
+      ],
+    },
+  });
+}
+
+// Send quote confirmation to the customer
+export async function sendQuoteConfirmation(data: {
+  customerPhone: string;
+  contactName: string;
+  quoteNumber: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "quote_confirmation",
+      language: { code: "en_US" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: data.contactName },
+            { type: "text", text: data.quoteNumber },
+          ],
+        },
+      ],
+    },
+  });
+}
+
+// Send order status update to customer
+export async function sendOrderUpdate(data: {
+  customerPhone: string;
+  orderNumber: string;
+  customerName: string;
+  status: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "order_update",
+      language: { code: "en_US" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: data.orderNumber },
+            { type: "text", text: data.customerName },
+            { type: "text", text: data.status },
+          ],
+        },
+      ],
+    },
+  });
+}
+
+// Legacy: free-form text (only works within 24h conversation window)
+export async function sendWhatsAppText(to: string, message: string): Promise<boolean> {
+  return sendWhatsAppAPI(to, {
+    type: "text",
+    text: { body: message },
+  });
 }
