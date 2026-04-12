@@ -120,6 +120,34 @@ export async function sendOrderUpdate(data: {
   });
 }
 
+// Send PO notification to supplier via template
+export async function sendPOToSupplier(data: {
+  supplierPhone: string;
+  poNumber: string;
+  contactPerson: string;
+  itemCount: number;
+  subtotal: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.supplierPhone, {
+    type: "template",
+    template: {
+      name: "purchase_order_notification",
+      language: { code: "en_US" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: data.poNumber },
+            { type: "text", text: data.contactPerson },
+            { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
+            { type: "text", text: data.subtotal },
+          ],
+        },
+      ],
+    },
+  });
+}
+
 // Legacy: free-form text (only works within 24h conversation window)
 export async function sendWhatsAppText(to: string, message: string): Promise<boolean> {
   return sendWhatsAppAPI(to, {

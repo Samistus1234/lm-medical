@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/email";
-import { sendWhatsAppText } from "@/lib/whatsapp";
+import { sendPOToSupplier } from "@/lib/whatsapp";
 
 export async function createPurchaseOrder(
   supplierId: string,
@@ -170,28 +170,17 @@ export async function sendPOWhatsApp(poId: string) {
   if (!po.suppliers?.whatsapp) return { error: "Supplier has no WhatsApp number" };
 
   const items = po.purchase_order_items || [];
-  const itemLines = items
-    .map(
-      (item: any, i: number) =>
-        `${i + 1}. ${item.products?.item_name || "—"}${item.products?.variant ? ` (${item.products.variant})` : ""} — Qty: ${item.quantity}, Cost: ${item.unit_cost?.toLocaleString()}, Total: ${item.total?.toLocaleString()}`
-    )
-    .join("\n");
 
-  const message = `*Purchase Order: ${po.po_number}*
-From: L&M Medical Solutions
+  // Clean the phone number — remove +, spaces, dashes
+  const cleanPhone = po.suppliers.whatsapp.replace(/[\s\-\+]/g, "");
 
-Dear ${po.suppliers.contact_person || po.suppliers.name},
-
-Please find our purchase order details below:
-
-${itemLines}
-
-*Subtotal: ${po.subtotal?.toLocaleString()} ${po.currency}*${po.notes ? `\n\nNotes: ${po.notes}` : ""}
-
-Please confirm receipt and availability.
-Thank you.`;
-
-  const sent = await sendWhatsAppText(po.suppliers.whatsapp, message);
+  const sent = await sendPOToSupplier({
+    supplierPhone: cleanPhone,
+    poNumber: po.po_number,
+    contactPerson: po.suppliers.contact_person || po.suppliers.name,
+    itemCount: items.length,
+    subtotal: `${po.subtotal?.toLocaleString()} ${po.currency}`,
+  });
 
   if (!sent) return { error: "Failed to send WhatsApp message" };
 
