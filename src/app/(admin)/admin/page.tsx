@@ -86,6 +86,7 @@ export default async function AdminDashboard() {
   const grossProfit = totalRevenue - purchaseCostsTotal;
 
   // Monthly financials (last 6 months)
+  const now = new Date();
   const monthlyFinancials: { month: string; revenue: number; costs: number }[] = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -161,7 +162,6 @@ export default async function AdminDashboard() {
   const quoteFunnel = { total: totalQuotes, accepted: acceptedQuotes, converted: convertedCount || 0 };
 
   // 4. Monthly revenue (last 6 months)
-  const now = new Date();
   const monthlyRevenue: { month: string; amount: number }[] = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
