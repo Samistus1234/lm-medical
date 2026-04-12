@@ -86,6 +86,14 @@ export default async function HomePage() {
             </div>
           </FadeIn>
 
+          {/* Brand name */}
+          <FadeIn delay={0.4} distance={60}>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-white tracking-wide mb-4"
+              style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontWeight: 300, letterSpacing: "0.05em" }}>
+              L&M Medical Solutions
+            </h1>
+          </FadeIn>
+
           {/* Main headline with text reveal */}
           <div className="text-5xl sm:text-7xl lg:text-[110px] text-white leading-[0.9] tracking-tight"
             style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontWeight: 400 }}>
