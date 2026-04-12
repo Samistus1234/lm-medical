@@ -24,6 +24,8 @@ const statusColors: Record<string, { bg: string; text: string; border: string }>
   negotiation: { bg: "rgba(245,158,11,0.1)", text: "#9b6829", border: "rgba(245,158,11,0.2)" },
   won: { bg: "rgba(21,190,83,0.1)", text: "#108c3d", border: "rgba(21,190,83,0.2)" },
   lost: { bg: "rgba(234,34,97,0.1)", text: "#ea2261", border: "rgba(234,34,97,0.2)" },
+  // Purchase Order statuses
+  received: { bg: "rgba(21,190,83,0.1)", text: "#108c3d", border: "rgba(21,190,83,0.2)" },
   // Blog
   published: { bg: "rgba(21,190,83,0.1)", text: "#108c3d", border: "rgba(21,190,83,0.2)" },
   // Team
