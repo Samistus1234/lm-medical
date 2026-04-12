@@ -147,7 +147,19 @@ export function InventoryTable({ products, categories, suppliers }: InventoryTab
                 <td className="px-3 py-2" style={{ color: "#0a1628" }}>{p.item_name}</td>
                 <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.category}</td>
                 <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.variant || "—"}</td>
-                <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.suppliers?.name || "—"}</td>
+                <td className="px-3 py-2">
+                  <select
+                    value={p.supplier_id || ""}
+                    onChange={async (e) => {
+                      await updateProduct(p.id, { supplier_id: e.target.value || null });
+                    }}
+                    className="w-full px-1 py-0.5 border rounded text-sm cursor-pointer bg-white hover:border-[#1a6bb5] transition-colors"
+                    style={{ borderColor: p.supplier_id ? "#1a6bb5" : "#e5edf5", color: p.supplier_id ? "#0a1628" : "#94a3b8", minWidth: "140px" }}
+                  >
+                    <option value="">— Select —</option>
+                    {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </td>
                 <td className="px-3 py-2"><EditableCell product={p} field="stock_qty" /></td>
                 <td className="px-3 py-2"><EditableCell product={p} field="cost_price_sdg" /></td>
                 <td className="px-3 py-2"><EditableCell product={p} field="sale_price_sdg" /></td>
