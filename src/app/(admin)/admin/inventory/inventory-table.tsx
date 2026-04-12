@@ -59,9 +59,11 @@ export function InventoryTable({ products, categories, suppliers }: InventoryTab
     setEditingCell(null);
   }
 
-  function EditableCell({ product, field }: { product: Product; field: keyof Product }) {
+  type EditableField = "stock_qty" | "cost_price_sdg" | "sale_price_sdg" | "cost_price_usd" | "sale_price_usd";
+
+  function EditableCell({ product, field }: { product: Product; field: EditableField }) {
     const isEditing = editingCell?.id === product.id && editingCell?.field === field;
-    const value = product[field];
+    const value = product[field] as number;
 
     if (isEditing) {
       return (
@@ -82,7 +84,7 @@ export function InventoryTable({ products, categories, suppliers }: InventoryTab
         className="cursor-pointer px-1 py-0.5 rounded hover:bg-[#e8f4fd] transition-colors"
         onClick={() => setEditingCell({ id: product.id, field })}
       >
-        {typeof value === "number" ? value.toLocaleString() : value}
+        {value.toLocaleString()}
       </span>
     );
   }
