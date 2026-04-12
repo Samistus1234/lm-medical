@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { StatsCard } from "@/components/admin/stats-card";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { DashboardCharts } from "./dashboard-charts";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
@@ -36,6 +37,91 @@ export default async function AdminDashboard() {
     stage,
     count: pipelineDeals?.filter((d) => d.stage === stage).length || 0,
   }));
+
+  // ── Chart data queries ──────────────────────────────────────────
+  const [
+    { data: allProducts },
+    { data: allOrders },
+    { data: allQuotes },
+    { data: paidInvoices },
+    { data: orderItemsWithProducts },
+    { data: productsWithSuppliers },
+  ] = await Promise.all([
+    supabase.from("products").select("category, stock_qty").eq("is_active", true),
+    supabase.from("orders").select("status"),
+    supabase.from("quotes").select("status, id"),
+    supabase.from("invoices").select("total, paid_at").eq("status", "paid"),
+    supabase.from("order_items").select("quantity, product_id, products(item_name)"),
+    supabase.from("products").select("supplier_id, suppliers(name)").eq("is_active", true).not("supplier_id", "is", null),
+  ]);
+
+  // 1. Stock by category
+  const categoryMap = new Map<string, { healthy: number; low: number; out: number }>();
+  (allProducts || []).forEach((p) => {
+    const entry = categoryMap.get(p.category) || { healthy: 0, low: 0, out: 0 };
+    if (p.stock_qty === 0) entry.out++;
+    else if (p.stock_qty <= 10) entry.low++;
+    else entry.healthy++;
+    categoryMap.set(p.category, entry);
+  });
+  const stockByCategory = Array.from(categoryMap.entries())
+    .map(([category, counts]) => ({ category, ...counts }))
+    .sort((a, b) => (b.healthy + b.low + b.out) - (a.healthy + a.low + a.out));
+
+  // 2. Orders by status
+  const orderStatusMap = new Map<string, number>();
+  (allOrders || []).forEach((o) => {
+    orderStatusMap.set(o.status, (orderStatusMap.get(o.status) || 0) + 1);
+  });
+  const ordersByStatus = ["confirmed", "processing", "shipped", "delivered", "cancelled"].map((s) => ({
+    status: s,
+    count: orderStatusMap.get(s) || 0,
+  }));
+
+  // 3. Quote funnel
+  const totalQuotes = allQuotes?.length || 0;
+  const acceptedQuotes = allQuotes?.filter((q) => q.status === "accepted").length || 0;
+  // Count quotes that have been converted to orders (by checking orders with quote_id)
+  const { count: convertedCount } = await supabase.from("orders").select("*", { count: "exact", head: true }).not("quote_id", "is", null);
+  const quoteFunnel = { total: totalQuotes, accepted: acceptedQuotes, converted: convertedCount || 0 };
+
+  // 4. Monthly revenue (last 6 months)
+  const now = new Date();
+  const monthlyRevenue: { month: string; amount: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthLabel = d.toLocaleString("en-US", { month: "short" });
+    const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    const amount = (paidInvoices || [])
+      .filter((inv) => {
+        if (!inv.paid_at) return false;
+        const paid = new Date(inv.paid_at);
+        return paid >= d && paid < nextMonth;
+      })
+      .reduce((sum, inv) => sum + (Number(inv.total) || 0), 0);
+    monthlyRevenue.push({ month: monthLabel, amount });
+  }
+
+  // 5. Top products by order quantity
+  const productQtyMap = new Map<string, number>();
+  (orderItemsWithProducts || []).forEach((item: any) => {
+    const name = item.products?.item_name || "Unknown";
+    productQtyMap.set(name, (productQtyMap.get(name) || 0) + (item.quantity || 0));
+  });
+  const topProducts = Array.from(productQtyMap.entries())
+    .map(([name, qty]) => ({ name, qty }))
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 5);
+
+  // 6. Supplier distribution
+  const supplierMap = new Map<string, number>();
+  (productsWithSuppliers || []).forEach((p: any) => {
+    const name = p.suppliers?.name || "Unknown";
+    supplierMap.set(name, (supplierMap.get(name) || 0) + 1);
+  });
+  const supplierDistribution = Array.from(supplierMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 
   return (
     <div>
@@ -128,6 +214,16 @@ export default async function AdminDashboard() {
           )) : <p className="text-sm py-4" style={{ color: "#64748d" }}>All products well stocked</p>}
         </div>
       </div>
+
+      {/* Analytics Charts */}
+      <DashboardCharts
+        stockByCategory={stockByCategory}
+        ordersByStatus={ordersByStatus}
+        quoteFunnel={quoteFunnel}
+        monthlyRevenue={monthlyRevenue}
+        topProducts={topProducts}
+        supplierDistribution={supplierDistribution}
+      />
     </div>
   );
 }
