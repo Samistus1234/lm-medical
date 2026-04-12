@@ -18,6 +18,7 @@ export async function createProduct(formData: FormData) {
     category: formData.get("category") as string,
     item_name: formData.get("item_name") as string,
     variant: (formData.get("variant") as string) || null,
+    supplier_id: (formData.get("supplier_id") as string) || null,
     notes: (formData.get("notes") as string) || null,
     stock_qty: parseInt(formData.get("stock_qty") as string) || 0,
     cost_price_sdg: parseFloat(formData.get("cost_price_sdg") as string) || 0,

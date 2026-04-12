@@ -6,9 +6,15 @@ export default async function InventoryPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("*")
+    .select("*, suppliers(name)")
     .order("category")
     .order("item_name");
+
+  const { data: suppliers } = await supabase
+    .from("suppliers")
+    .select("id, name")
+    .eq("is_active", true)
+    .order("name");
 
   const categories = [...new Set(products?.map((p) => p.category) || [])].sort();
 
@@ -20,7 +26,7 @@ export default async function InventoryPage() {
           <p className="mt-1" style={{ color: "#64748d" }}>{products?.length || 0} products</p>
         </div>
       </div>
-      <InventoryTable products={products || []} categories={categories} />
+      <InventoryTable products={products || []} categories={categories} suppliers={suppliers || []} />
     </div>
   );
 }

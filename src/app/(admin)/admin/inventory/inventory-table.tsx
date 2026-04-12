@@ -5,12 +5,19 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/admin/modal";
 import { updateProduct, createProduct } from "./actions";
 
+interface Supplier {
+  id: string;
+  name: string;
+}
+
 interface Product {
   id: string;
   item_code: string;
   item_name: string;
   category: string;
   variant: string | null;
+  supplier_id: string | null;
+  suppliers: { name: string } | null;
   stock_qty: number;
   cost_price_sdg: number;
   sale_price_sdg: number;
@@ -22,9 +29,10 @@ interface Product {
 interface InventoryTableProps {
   products: Product[];
   categories: string[];
+  suppliers: Supplier[];
 }
 
-export function InventoryTable({ products, categories }: InventoryTableProps) {
+export function InventoryTable({ products, categories, suppliers }: InventoryTableProps) {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [stockFilter, setStockFilter] = useState("");
@@ -125,7 +133,7 @@ export function InventoryTable({ products, categories }: InventoryTableProps) {
         <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              {["Code", "Name", "Category", "Variant", "Stock", "Cost (SDG)", "Sale (SDG)", "Cost (USD)", "Sale (USD)"].map((h) => (
+              {["Code", "Name", "Category", "Variant", "Supplier", "Stock", "Cost (SDG)", "Sale (SDG)", "Cost (USD)", "Sale (USD)"].map((h) => (
                 <th key={h} className="text-left px-3 py-3 font-normal whitespace-nowrap" style={{ color: "#273951", backgroundColor: "#f8fafc", borderBottom: "1px solid #e5edf5" }}>
                   {h}
                 </th>
@@ -139,6 +147,7 @@ export function InventoryTable({ products, categories }: InventoryTableProps) {
                 <td className="px-3 py-2" style={{ color: "#0a1628" }}>{p.item_name}</td>
                 <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.category}</td>
                 <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.variant || "—"}</td>
+                <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.suppliers?.name || "—"}</td>
                 <td className="px-3 py-2"><EditableCell product={p} field="stock_qty" /></td>
                 <td className="px-3 py-2"><EditableCell product={p} field="cost_price_sdg" /></td>
                 <td className="px-3 py-2"><EditableCell product={p} field="sale_price_sdg" /></td>
@@ -171,6 +180,13 @@ export function InventoryTable({ products, categories }: InventoryTableProps) {
               <input name={f.name} type={f.type || "text"} required={f.required} className="w-full px-3 py-2 border rounded-[4px] text-sm focus:outline-none focus:border-[#1a6bb5]" style={{ borderColor: "#e5edf5", color: "#0a1628" }} />
             </div>
           ))}
+          <div>
+            <label className="block text-sm mb-1" style={{ color: "#273951" }}>Supplier</label>
+            <select name="supplier_id" className="w-full px-3 py-2 border rounded-[4px] text-sm focus:outline-none focus:border-[#1a6bb5]" style={{ borderColor: "#e5edf5", color: "#0a1628" }}>
+              <option value="">No Supplier</option>
+              {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
           <button type="submit" className="w-full py-2 text-white rounded-[4px]" style={{ backgroundColor: "#1a6bb5" }}>Add Product</button>
         </form>
       </Modal>
