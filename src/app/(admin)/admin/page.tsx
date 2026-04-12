@@ -12,6 +12,7 @@ export default async function AdminDashboard() {
     { count: customerCount },
     { count: quoteCount },
     { count: orderCount },
+    { count: purchaseOrderCount },
     { data: lowStockProducts },
     { data: pendingQuotes },
     { data: recentOrders },
@@ -22,6 +23,7 @@ export default async function AdminDashboard() {
     supabase.from("customers").select("*", { count: "exact", head: true }),
     supabase.from("quotes").select("*", { count: "exact", head: true }).in("status", ["pending", "reviewed", "quoted"]),
     supabase.from("orders").select("*", { count: "exact", head: true }).in("status", ["confirmed", "processing", "shipped"]),
+    supabase.from("purchase_orders").select("*", { count: "exact", head: true }).in("status", ["draft", "sent", "confirmed"]),
     supabase.from("products").select("id, item_code, item_name, stock_qty").eq("is_active", true).lte("stock_qty", 5).order("stock_qty").limit(10),
     supabase.from("quotes").select("id, quote_number, contact_name, status, created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(5),
     supabase.from("orders").select("id, order_number, status, total, currency, created_at, customers(name)").order("created_at", { ascending: false }).limit(5),
@@ -40,11 +42,12 @@ export default async function AdminDashboard() {
       <h1 className="text-3xl font-light mb-6" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>Dashboard</h1>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <StatsCard label="Active Products" value={productCount || 0} />
         <StatsCard label="Customers" value={customerCount || 0} />
         <StatsCard label="Active Quotes" value={quoteCount || 0} subtitle="Pending, reviewed, or quoted" />
         <StatsCard label="Active Orders" value={orderCount || 0} subtitle="Confirmed, processing, or shipped" />
+        <StatsCard label="Purchase Orders" value={purchaseOrderCount || 0} subtitle="Draft, sent, or confirmed" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -107,7 +110,10 @@ export default async function AdminDashboard() {
         <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-normal" style={{ color: "#273951" }}>Low Stock Alerts</h3>
-            <Link href="/admin/inventory" className="text-xs" style={{ color: "#1a6bb5" }}>View all</Link>
+            <div className="flex items-center gap-3">
+              <Link href="/admin/purchase-orders/new" className="text-xs px-2 py-1 rounded-[4px] text-white" style={{ backgroundColor: "#1a6bb5" }}>Create Purchase Order</Link>
+              <Link href="/admin/inventory" className="text-xs" style={{ color: "#1a6bb5" }}>View all</Link>
+            </div>
           </div>
           {lowStockProducts && lowStockProducts.length > 0 ? lowStockProducts.map((p) => (
             <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #f8fafc" }}>
