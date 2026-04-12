@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { StatsCard } from "@/components/admin/stats-card";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { DashboardCharts } from "./dashboard-charts";
+import { DashboardFinancials } from "./dashboard-financials";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
@@ -54,6 +55,80 @@ export default async function AdminDashboard() {
     supabase.from("order_items").select("quantity, product_id, products(item_name)"),
     supabase.from("products").select("supplier_id, suppliers(name)").eq("is_active", true).not("supplier_id", "is", null),
   ]);
+
+  // ── Financial data queries ──────────────────────────────────────
+  const [
+    { data: allInvoices },
+    { data: receivedPOs },
+    { data: outstandingInvoiceRows },
+  ] = await Promise.all([
+    supabase.from("invoices").select("id, invoice_number, status, total, currency, due_date, paid_at, customers(name)"),
+    supabase.from("purchase_orders").select("subtotal, currency, status, created_at").eq("status", "received"),
+    supabase
+      .from("invoices")
+      .select("id, invoice_number, status, total, currency, due_date, customers(name)")
+      .in("status", ["sent", "overdue"])
+      .order("due_date", { ascending: true })
+      .limit(5),
+  ]);
+
+  // Financial aggregates
+  const totalRevenue = (allInvoices || [])
+    .filter((inv) => inv.status === "paid")
+    .reduce((sum, inv) => sum + (Number(inv.total) || 0), 0);
+
+  const outstandingTotal = (allInvoices || [])
+    .filter((inv) => inv.status === "sent" || inv.status === "overdue")
+    .reduce((sum, inv) => sum + (Number(inv.total) || 0), 0);
+
+  const purchaseCostsTotal = (receivedPOs || []).reduce((sum, po) => sum + (Number(po.subtotal) || 0), 0);
+
+  const grossProfit = totalRevenue - purchaseCostsTotal;
+
+  // Monthly financials (last 6 months)
+  const monthlyFinancials: { month: string; revenue: number; costs: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthLabel = d.toLocaleString("en-US", { month: "short" });
+    const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+
+    const revenue = (allInvoices || [])
+      .filter((inv) => {
+        if (inv.status !== "paid" || !inv.paid_at) return false;
+        const paid = new Date(inv.paid_at);
+        return paid >= d && paid < nextMonth;
+      })
+      .reduce((sum, inv) => sum + (Number(inv.total) || 0), 0);
+
+    const costs = (receivedPOs || [])
+      .filter((po) => {
+        if (!po.created_at) return false;
+        const created = new Date(po.created_at);
+        return created >= d && created < nextMonth;
+      })
+      .reduce((sum, po) => sum + (Number(po.subtotal) || 0), 0);
+
+    monthlyFinancials.push({ month: monthLabel, revenue, costs });
+  }
+
+  // Outstanding invoices for table
+  const outstandingInvoices = (outstandingInvoiceRows || []).map((inv: any) => ({
+    id: inv.id,
+    invoice_number: inv.invoice_number || "—",
+    customer_name: inv.customers?.name || "Unknown",
+    total: Number(inv.total) || 0,
+    currency: inv.currency || "USD",
+    due_date: inv.due_date || "",
+    status: inv.status,
+  }));
+
+  // Invoice status breakdown
+  const invoiceStatusBreakdown = {
+    paid: (allInvoices || []).filter((inv) => inv.status === "paid").length,
+    sent: (allInvoices || []).filter((inv) => inv.status === "sent").length,
+    overdue: (allInvoices || []).filter((inv) => inv.status === "overdue").length,
+    draft: (allInvoices || []).filter((inv) => inv.status === "draft").length,
+  };
 
   // 1. Stock by category
   const categoryMap = new Map<string, { healthy: number; low: number; out: number }>();
@@ -135,6 +210,17 @@ export default async function AdminDashboard() {
         <StatsCard label="Active Orders" value={orderCount || 0} subtitle="Confirmed, processing, or shipped" />
         <StatsCard label="Purchase Orders" value={purchaseOrderCount || 0} subtitle="Draft, sent, or confirmed" />
       </div>
+
+      {/* Financials Overview */}
+      <DashboardFinancials
+        totalRevenue={totalRevenue}
+        outstanding={outstandingTotal}
+        purchaseCosts={purchaseCostsTotal}
+        grossProfit={grossProfit}
+        monthlyFinancials={monthlyFinancials}
+        outstandingInvoices={outstandingInvoices}
+        invoiceStatusBreakdown={invoiceStatusBreakdown}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Pending Quotes */}
