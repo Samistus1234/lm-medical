@@ -133,7 +133,7 @@ export function InventoryTable({ products, categories, suppliers }: InventoryTab
         <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              {["Code", "Name", "Category", "Variant", "Supplier", "Stock", "Cost (SDG)", "Sale (SDG)", "Cost (USD)", "Sale (USD)"].map((h) => (
+              {["Code", "Name", "Supplier", "Stock", "Category", "Variant", "Cost (USD)", "Sale (USD)"].map((h) => (
                 <th key={h} className="text-left px-3 py-3 font-normal whitespace-nowrap" style={{ color: "#273951", backgroundColor: "#f8fafc", borderBottom: "1px solid #e5edf5" }}>
                   {h}
                 </th>
@@ -145,8 +145,6 @@ export function InventoryTable({ products, categories, suppliers }: InventoryTab
               <tr key={p.id} style={{ borderBottom: "1px solid #e5edf5" }}>
                 <td className="px-3 py-2 font-mono text-xs" style={{ color: "#1a6bb5" }}>{p.item_code}</td>
                 <td className="px-3 py-2" style={{ color: "#0a1628" }}>{p.item_name}</td>
-                <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.category}</td>
-                <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.variant || "—"}</td>
                 <td className="px-3 py-2">
                   <select
                     value={p.supplier_id || ""}
@@ -161,8 +159,8 @@ export function InventoryTable({ products, categories, suppliers }: InventoryTab
                   </select>
                 </td>
                 <td className="px-3 py-2"><EditableCell product={p} field="stock_qty" /></td>
-                <td className="px-3 py-2"><EditableCell product={p} field="cost_price_sdg" /></td>
-                <td className="px-3 py-2"><EditableCell product={p} field="sale_price_sdg" /></td>
+                <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.category}</td>
+                <td className="px-3 py-2" style={{ color: "#64748d" }}>{p.variant || "—"}</td>
                 <td className="px-3 py-2"><EditableCell product={p} field="cost_price_usd" /></td>
                 <td className="px-3 py-2"><EditableCell product={p} field="sale_price_usd" /></td>
               </tr>
