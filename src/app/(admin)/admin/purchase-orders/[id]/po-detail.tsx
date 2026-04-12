@@ -218,7 +218,7 @@ export function PODetail({ po }: { po: PurchaseOrder }) {
       </div>
 
       {/* Send to Supplier */}
-      {(po.status === "draft" || po.status === "sent") && (
+      {po.status !== "cancelled" && (
         <div className="bg-white rounded-[6px] p-6 mb-6" style={{ border: "1px solid #e5edf5" }}>
           <h3 className="text-sm font-normal mb-3" style={{ color: "#273951" }}>Send to Supplier</h3>
           <div className="flex items-center gap-3">
