@@ -8,6 +8,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const url = new URL(request.url);
+  const format = url.searchParams.get("format");
   const supabase = await createClient();
 
   const { data: invoice } = await supabase
@@ -795,6 +797,107 @@ export async function GET(
 </div>
 </body>
 </html>`;
+
+  // If format=pdf, generate actual PDF with jsPDF
+  if (format === "pdf") {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const customer = invoice.customers;
+
+    // Header
+    doc.setFontSize(20);
+    doc.text("L&M Medical Solutions", 20, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("Orthopedic Implants & Surgical Systems", 20, 27);
+    doc.text("Khartoum, Sudan | info@lmmedicalsolutions.org", 20, 32);
+
+    // Invoice title
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text(`Invoice ${invoice.invoice_number}`, 20, 48);
+
+    // Status
+    doc.setFontSize(10);
+    doc.setTextColor(26, 107, 181);
+    doc.text(`Status: ${status.label}`, 140, 48);
+
+    // Dates
+    doc.setTextColor(100);
+    doc.setFontSize(9);
+    doc.text(`Issue Date: ${issueDate}`, 140, 55);
+    doc.text(`Due Date: ${dueDate}`, 140, 60);
+    if (paidDate) doc.text(`Paid: ${paidDate}`, 140, 65);
+
+    // Customer info
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text("Bill To:", 20, 55);
+    doc.setTextColor(60);
+    doc.text(customer?.name || "—", 20, 61);
+    if (customer?.address) doc.text(customer.address, 20, 66);
+    if (customer?.city) doc.text(`${customer.city}${customer.country ? ", " + customer.country : ""}`, 20, 71);
+    if (customer?.email) doc.text(customer.email, 20, 76);
+
+    // Items table header
+    let y = 90;
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, y - 5, 170, 8, "F");
+    doc.setFontSize(8);
+    doc.setTextColor(39, 57, 81);
+    doc.text("ITEM CODE", 22, y);
+    doc.text("PRODUCT", 52, y);
+    doc.text("QTY", 120, y, { align: "right" });
+    doc.text("UNIT PRICE", 150, y, { align: "right" });
+    doc.text("TOTAL", 185, y, { align: "right" });
+    y += 8;
+
+    // Items
+    doc.setFontSize(9);
+    doc.setTextColor(10, 22, 40);
+    for (const item of items) {
+      doc.text(item.products?.item_code || "—", 22, y);
+      const productName = `${item.products?.item_name || "—"}${item.products?.variant ? " — " + item.products.variant : ""}`;
+      doc.text(productName.substring(0, 40), 52, y);
+      doc.text(String(item.quantity), 120, y, { align: "right" });
+      doc.text(`${(item.unit_price || 0).toLocaleString()}`, 150, y, { align: "right" });
+      doc.text(`${(item.total || 0).toLocaleString()}`, 185, y, { align: "right" });
+      y += 7;
+      if (y > 260) { doc.addPage(); y = 20; }
+    }
+
+    // Totals
+    y += 5;
+    doc.setDrawColor(229, 237, 245);
+    doc.line(120, y, 190, y);
+    y += 7;
+    doc.setFontSize(9);
+    doc.text("Subtotal:", 130, y);
+    doc.text(`${(invoice.subtotal || 0).toLocaleString()} ${invoice.currency}`, 185, y, { align: "right" });
+    if (invoice.tax) {
+      y += 6;
+      doc.text("Tax:", 130, y);
+      doc.text(`${invoice.tax.toLocaleString()} ${invoice.currency}`, 185, y, { align: "right" });
+    }
+    y += 7;
+    doc.setFontSize(11);
+    doc.setTextColor(26, 107, 181);
+    doc.text("Total:", 130, y);
+    doc.text(`${(invoice.total || 0).toLocaleString()} ${invoice.currency}`, 185, y, { align: "right" });
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text("L&M Medical Solutions — Premium Orthopedic Implants & Surgical Supplies", 105, 280, { align: "center" });
+
+    const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
+    return new NextResponse(pdfBuffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="Invoice-${invoice.invoice_number}.pdf"`,
+      },
+    });
+  }
 
   return new NextResponse(html, {
     headers: { "Content-Type": "text/html; charset=utf-8" },

@@ -8,6 +8,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const url = new URL(request.url);
+  const format = url.searchParams.get("format");
   const supabase = await createClient();
 
   const { data: po } = await supabase
@@ -795,6 +797,97 @@ export async function GET(
 </div>
 </body>
 </html>`;
+
+  // If format=pdf, generate actual PDF with jsPDF
+  if (format === "pdf") {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const supplier = po.suppliers;
+    const items = po.purchase_order_items || [];
+    const createdDate = new Date(po.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+    // Header
+    doc.setFontSize(20);
+    doc.text("L&M Medical Solutions", 20, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("Orthopedic Implants & Surgical Systems", 20, 27);
+    doc.text("Khartoum, Sudan | info@lmmedicalsolutions.org", 20, 32);
+
+    // PO title
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text(`Purchase Order ${po.po_number}`, 20, 48);
+
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(`Date: ${createdDate}`, 140, 48);
+    doc.text(`Status: ${po.status.toUpperCase()}`, 140, 54);
+
+    // Supplier info
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text("Supplier:", 20, 58);
+    doc.setTextColor(60);
+    doc.text(supplier?.name || "—", 20, 64);
+    if (supplier?.contact_person) doc.text(`Attn: ${supplier.contact_person}`, 20, 69);
+    if (supplier?.email) doc.text(supplier.email, 20, 74);
+    if (supplier?.phone) doc.text(supplier.phone, 20, 79);
+
+    // Items table
+    let y = 92;
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, y - 5, 170, 8, "F");
+    doc.setFontSize(8);
+    doc.setTextColor(39, 57, 81);
+    doc.text("ITEM CODE", 22, y);
+    doc.text("PRODUCT", 52, y);
+    doc.text("QTY", 120, y, { align: "right" });
+    doc.text("UNIT COST", 150, y, { align: "right" });
+    doc.text("TOTAL", 185, y, { align: "right" });
+    y += 8;
+
+    doc.setFontSize(9);
+    doc.setTextColor(10, 22, 40);
+    for (const item of items) {
+      doc.text(item.products?.item_code || "—", 22, y);
+      const name = `${item.products?.item_name || "—"}${item.products?.variant ? " — " + item.products.variant : ""}`;
+      doc.text(name.substring(0, 40), 52, y);
+      doc.text(String(item.quantity), 120, y, { align: "right" });
+      doc.text(`${(item.unit_cost || 0).toLocaleString()}`, 150, y, { align: "right" });
+      doc.text(`${(item.total || 0).toLocaleString()}`, 185, y, { align: "right" });
+      y += 7;
+      if (y > 260) { doc.addPage(); y = 20; }
+    }
+
+    y += 5;
+    doc.setDrawColor(229, 237, 245);
+    doc.line(120, y, 190, y);
+    y += 7;
+    doc.setFontSize(11);
+    doc.setTextColor(26, 107, 181);
+    doc.text("Subtotal:", 130, y);
+    doc.text(`${(po.subtotal || 0).toLocaleString()} ${po.currency}`, 185, y, { align: "right" });
+
+    if (po.notes) {
+      y += 12;
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(`Notes: ${po.notes}`, 20, y);
+    }
+
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text("L&M Medical Solutions — Premium Orthopedic Implants & Surgical Supplies", 105, 280, { align: "center" });
+
+    const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
+    return new NextResponse(pdfBuffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="PO-${po.po_number}.pdf"`,
+      },
+    });
+  }
 
   return new NextResponse(html, {
     headers: { "Content-Type": "text/html; charset=utf-8" },

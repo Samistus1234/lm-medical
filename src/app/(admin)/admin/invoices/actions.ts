@@ -21,7 +21,7 @@ export async function updateInvoiceStatus(id: string, status: string) {
     if (customer?.phone) {
       const phone = customer.phone.replace(/[\s\-\+]/g, "");
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lmmedicalsolutions.org";
-      const pdfUrl = `${baseUrl}/api/invoices/${id}/pdf`;
+      const pdfUrl = `${baseUrl}/api/invoices/${id}/pdf?format=pdf`;
 
       if (status === "sent") {
         // Send template message first, then PDF

@@ -188,7 +188,7 @@ export async function sendPOWhatsApp(poId: string) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lmmedicalsolutions.org";
   sendWhatsAppDocument({
     to: cleanPhone,
-    documentUrl: `${baseUrl}/api/purchase-orders/${poId}/pdf`,
+    documentUrl: `${baseUrl}/api/purchase-orders/${poId}/pdf?format=pdf`,
     filename: `PO-${po.po_number}.pdf`,
     caption: `Purchase Order ${po.po_number} — L&M Medical Solutions`,
   }).catch(console.error);
