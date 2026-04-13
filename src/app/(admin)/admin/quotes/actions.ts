@@ -1,11 +1,32 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sendQuoteReady } from "@/lib/whatsapp";
 
 export async function updateQuoteStatus(id: string, status: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("quotes").update({ status }).eq("id", id);
   if (error) return { error: error.message };
+
+  // Send WhatsApp notification when quote is ready
+  if (status === "quoted") {
+    const { data: quote } = await supabase
+      .from("quotes")
+      .select("quote_number, contact_name, contact_phone, total_amount, quote_items(id)")
+      .eq("id", id)
+      .single();
+    if (quote?.contact_phone) {
+      const phone = quote.contact_phone.replace(/[\s\-\+]/g, "");
+      sendQuoteReady({
+        customerPhone: phone,
+        contactName: quote.contact_name || "Customer",
+        quoteNumber: quote.quote_number,
+        total: `${quote.total_amount || 0}`,
+        itemCount: quote.quote_items?.length || 0,
+      }).catch(console.error);
+    }
+  }
+
   revalidatePath("/admin/quotes");
   revalidatePath(`/admin/quotes/${id}`);
   return { success: true };

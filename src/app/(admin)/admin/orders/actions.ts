@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sendDeliveryNotification } from "@/lib/whatsapp";
 
 export async function updateOrderStatus(id: string, status: string) {
   const supabase = await createClient();
@@ -8,6 +9,27 @@ export async function updateOrderStatus(id: string, status: string) {
   if (status === "delivered") updates.delivered_at = new Date().toISOString();
   const { error } = await supabase.from("orders").update(updates).eq("id", id);
   if (error) return { error: error.message };
+
+  // Send WhatsApp delivery notification for shipped/delivered
+  if (status === "shipped" || status === "delivered") {
+    const { data: order } = await supabase
+      .from("orders")
+      .select("order_number, customers(contact_person, phone), order_items(id)")
+      .eq("id", id)
+      .single();
+    const customer = (order as any)?.customers;
+    if (customer?.phone) {
+      const phone = customer.phone.replace(/[\s\-\+]/g, "");
+      sendDeliveryNotification({
+        customerPhone: phone,
+        contactName: customer.contact_person || "Customer",
+        orderNumber: order!.order_number,
+        status: status === "shipped" ? "Shipped" : "Delivered",
+        itemCount: (order as any)?.order_items?.length || 0,
+      }).catch(console.error);
+    }
+  }
+
   revalidatePath("/admin/orders");
   return { success: true };
 }

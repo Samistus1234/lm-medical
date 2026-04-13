@@ -160,6 +160,151 @@ export async function sendPOToSupplier(data: {
   });
 }
 
+// Send quote ready notification to customer
+export async function sendQuoteReady(data: {
+  customerPhone: string;
+  contactName: string;
+  quoteNumber: string;
+  total: string;
+  itemCount: number;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "quote_ready",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: data.contactName },
+          { type: "text", text: data.quoteNumber },
+          { type: "text", text: data.total },
+          { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
+        ],
+      }],
+    },
+  });
+}
+
+// Send invoice to customer
+export async function sendInvoiceNotification(data: {
+  customerPhone: string;
+  contactName: string;
+  invoiceNumber: string;
+  total: string;
+  dueDate: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "invoice_sent",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: data.contactName },
+          { type: "text", text: data.invoiceNumber },
+          { type: "text", text: data.total },
+          { type: "text", text: data.dueDate },
+        ],
+      }],
+    },
+  });
+}
+
+// Thank customer for payment
+export async function sendPaymentReceived(data: {
+  customerPhone: string;
+  contactName: string;
+  invoiceNumber: string;
+  amount: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "payment_received",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: data.contactName },
+          { type: "text", text: data.invoiceNumber },
+          { type: "text", text: data.amount },
+        ],
+      }],
+    },
+  });
+}
+
+// Notify customer of delivery status
+export async function sendDeliveryNotification(data: {
+  customerPhone: string;
+  contactName: string;
+  orderNumber: string;
+  status: string;
+  itemCount: number;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "delivery_notification",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: data.contactName },
+          { type: "text", text: data.orderNumber },
+          { type: "text", text: data.status },
+          { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
+        ],
+      }],
+    },
+  });
+}
+
+// Internal low stock alert to team
+export async function sendLowStockAlert(data: {
+  count: number;
+  productList: string;
+}): Promise<boolean> {
+  const teamNumber = process.env.WHATSAPP_TEAM_NUMBER;
+  if (!teamNumber) return false;
+  return sendWhatsAppAPI(teamNumber, {
+    type: "template",
+    template: {
+      name: "low_stock_alert",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: String(data.count) },
+          { type: "text", text: data.productList },
+        ],
+      }],
+    },
+  });
+}
+
+// Welcome new customer
+export async function sendWelcomeCustomer(data: {
+  customerPhone: string;
+  contactName: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "welcome_customer",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: data.contactName },
+        ],
+      }],
+    },
+  });
+}
+
 // Legacy: free-form text (only works within 24h conversation window)
 export async function sendWhatsAppText(to: string, message: string): Promise<boolean> {
   return sendWhatsAppAPI(to, {
