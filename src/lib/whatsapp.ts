@@ -120,7 +120,7 @@ export async function sendOrderUpdate(data: {
   });
 }
 
-// Send PO notification to supplier via template
+// Send PO notification to supplier — try template first, fall back to text
 export async function sendPOToSupplier(data: {
   supplierPhone: string;
   poNumber: string;
@@ -128,7 +128,8 @@ export async function sendPOToSupplier(data: {
   itemCount: number;
   subtotal: string;
 }): Promise<boolean> {
-  return sendWhatsAppAPI(data.supplierPhone, {
+  // Try template first
+  const templateResult = await sendWhatsAppAPI(data.supplierPhone, {
     type: "template",
     template: {
       name: "purchase_order_notification",
@@ -144,6 +145,17 @@ export async function sendPOToSupplier(data: {
           ],
         },
       ],
+    },
+  });
+
+  if (templateResult) return true;
+
+  // Fallback to free-form text
+  console.log("[WhatsApp] Template failed, trying free-form text");
+  return sendWhatsAppAPI(data.supplierPhone, {
+    type: "text",
+    text: {
+      body: `*Purchase Order: ${data.poNumber}*\n\nDear ${data.contactPerson},\n\nPlease find our purchase order:\n\n📦 Items: ${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}\n💰 Subtotal: ${data.subtotal}\n\nPlease confirm availability and delivery timeline.\n\nL&M Medical Solutions\ninfo@lmmedicalsolutions.org`,
     },
   });
 }
