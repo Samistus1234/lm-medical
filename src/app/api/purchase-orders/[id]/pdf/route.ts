@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -10,7 +10,7 @@ export async function GET(
   const { id } = await params;
   const url = new URL(request.url);
   const format = url.searchParams.get("format");
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: po } = await supabase
     .from("purchase_orders")
