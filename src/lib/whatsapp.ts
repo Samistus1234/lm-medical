@@ -1,20 +1,25 @@
-const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID || "";
-const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN || "";
-const WHATSAPP_TEAM_NUMBER = process.env.WHATSAPP_TEAM_NUMBER || "";
+function getConfig() {
+  return {
+    phoneId: process.env.WHATSAPP_PHONE_ID || "",
+    token: process.env.WHATSAPP_API_TOKEN || "",
+    teamNumber: process.env.WHATSAPP_TEAM_NUMBER || "",
+  };
+}
 
 async function sendWhatsAppAPI(to: string, payload: Record<string, unknown>): Promise<boolean> {
-  if (!WHATSAPP_API_TOKEN || !WHATSAPP_PHONE_ID) {
-    console.log("[WhatsApp] No API credentials — skipped");
+  const { phoneId, token } = getConfig();
+  if (!token || !phoneId) {
+    console.log("[WhatsApp] No API credentials — skipped. PHONE_ID:", phoneId ? "set" : "missing", "TOKEN:", token ? "set" : "missing");
     return false;
   }
 
   try {
     const res = await fetch(
-      `https://graph.facebook.com/v21.0/${WHATSAPP_PHONE_ID}/messages`,
+      `https://graph.facebook.com/v21.0/${phoneId}/messages`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${WHATSAPP_API_TOKEN}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -47,9 +52,10 @@ export async function sendQuoteNotification(data: {
   email: string;
   itemCount: number;
 }): Promise<boolean> {
-  if (!WHATSAPP_TEAM_NUMBER) return false;
+  const { teamNumber } = getConfig();
+  if (!teamNumber) return false;
 
-  return sendWhatsAppAPI(WHATSAPP_TEAM_NUMBER, {
+  return sendWhatsAppAPI(teamNumber, {
     type: "template",
     template: {
       name: "new_quote_request",
@@ -267,7 +273,7 @@ export async function sendLowStockAlert(data: {
   count: number;
   productList: string;
 }): Promise<boolean> {
-  const teamNumber = process.env.WHATSAPP_TEAM_NUMBER;
+  const { teamNumber } = getConfig();
   if (!teamNumber) return false;
   return sendWhatsAppAPI(teamNumber, {
     type: "template",
