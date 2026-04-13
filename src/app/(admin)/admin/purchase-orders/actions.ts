@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/email";
-import { sendPOToSupplier } from "@/lib/whatsapp";
+import { sendPOToSupplier, sendWhatsAppDocument } from "@/lib/whatsapp";
 
 export async function createPurchaseOrder(
   supplierId: string,
@@ -183,6 +183,15 @@ export async function sendPOWhatsApp(poId: string) {
   });
 
   if (!sent) return { error: "Failed to send WhatsApp message" };
+
+  // Follow up with PO PDF document
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lmmedicalsolutions.org";
+  sendWhatsAppDocument({
+    to: cleanPhone,
+    documentUrl: `${baseUrl}/api/purchase-orders/${poId}/pdf`,
+    filename: `PO-${po.po_number}.pdf`,
+    caption: `Purchase Order ${po.po_number} — L&M Medical Solutions`,
+  }).catch(console.error);
 
   // Update status to sent if currently draft
   if (po.status === "draft") {

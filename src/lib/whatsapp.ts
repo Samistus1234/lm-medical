@@ -333,6 +333,23 @@ export async function sendWelcomeCustomer(data: {
   });
 }
 
+// Send a PDF document via WhatsApp using a public URL
+export async function sendWhatsAppDocument(data: {
+  to: string;
+  documentUrl: string;
+  filename: string;
+  caption?: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.to, {
+    type: "document",
+    document: {
+      link: data.documentUrl,
+      filename: data.filename,
+      caption: data.caption || "",
+    },
+  });
+}
+
 // Legacy: free-form text (only works within 24h conversation window)
 export async function sendWhatsAppText(to: string, message: string): Promise<boolean> {
   return sendWhatsAppAPI(to, {
