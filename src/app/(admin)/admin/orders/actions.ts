@@ -1,7 +1,7 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { sendDeliveryNotification } from "@/lib/whatsapp";
+import { sendOrderShipped, sendOrderDelivered } from "@/lib/whatsapp";
 
 export async function updateOrderStatus(id: string, status: string) {
   const supabase = await createClient();
@@ -10,7 +10,7 @@ export async function updateOrderStatus(id: string, status: string) {
   const { error } = await supabase.from("orders").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
-  // Send WhatsApp delivery notification for shipped/delivered
+  // Send WhatsApp notification for shipped/delivered
   if (status === "shipped" || status === "delivered") {
     const { data: order } = await supabase
       .from("orders")
@@ -20,13 +20,22 @@ export async function updateOrderStatus(id: string, status: string) {
     const customer = (order as any)?.customers;
     if (customer?.phone) {
       const phone = customer.phone.replace(/[\s\-\+]/g, "");
-      sendDeliveryNotification({
-        customerPhone: phone,
-        contactName: customer.contact_person || "Customer",
-        orderNumber: order!.order_number,
-        status: status === "shipped" ? "Shipped" : "Delivered",
-        itemCount: (order as any)?.order_items?.length || 0,
-      }).catch(console.error);
+      const itemCount = (order as any)?.order_items?.length || 0;
+      if (status === "shipped") {
+        sendOrderShipped({
+          customerPhone: phone,
+          contactName: customer.contact_person || "Customer",
+          orderNumber: order!.order_number,
+          itemCount,
+        }).catch(console.error);
+      } else {
+        sendOrderDelivered({
+          customerPhone: phone,
+          contactName: customer.contact_person || "Customer",
+          orderNumber: order!.order_number,
+          itemCount,
+        }).catch(console.error);
+      }
     }
   }
 

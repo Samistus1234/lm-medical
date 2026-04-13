@@ -1,7 +1,7 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { sendInvoiceNotification, sendPaymentReceived } from "@/lib/whatsapp";
+import { sendInvoicePaymentRequest, sendPaymentConfirmed } from "@/lib/whatsapp";
 
 export async function updateInvoiceStatus(id: string, status: string) {
   const supabase = await createClient();
@@ -21,7 +21,7 @@ export async function updateInvoiceStatus(id: string, status: string) {
     if (customer?.phone) {
       const phone = customer.phone.replace(/[\s\-\+]/g, "");
       if (status === "sent") {
-        sendInvoiceNotification({
+        sendInvoicePaymentRequest({
           customerPhone: phone,
           contactName: customer.contact_person || "Customer",
           invoiceNumber: invoice!.invoice_number,
@@ -29,7 +29,7 @@ export async function updateInvoiceStatus(id: string, status: string) {
           dueDate: invoice!.due_date || "N/A",
         }).catch(console.error);
       } else if (status === "paid") {
-        sendPaymentReceived({
+        sendPaymentConfirmed({
           customerPhone: phone,
           contactName: customer.contact_person || "Customer",
           invoiceNumber: invoice!.invoice_number,

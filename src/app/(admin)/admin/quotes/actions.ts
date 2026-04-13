@@ -1,7 +1,7 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { sendQuoteReady } from "@/lib/whatsapp";
+import { sendQuotePricingReady, sendOrderConfirmed } from "@/lib/whatsapp";
 
 export async function updateQuoteStatus(id: string, status: string) {
   const supabase = await createClient();
@@ -17,12 +17,12 @@ export async function updateQuoteStatus(id: string, status: string) {
       .single();
     if (quote?.contact_phone) {
       const phone = quote.contact_phone.replace(/[\s\-\+]/g, "");
-      sendQuoteReady({
+      sendQuotePricingReady({
         customerPhone: phone,
         contactName: quote.contact_name || "Customer",
         quoteNumber: quote.quote_number,
-        total: `${quote.total_amount || 0}`,
         itemCount: quote.quote_items?.length || 0,
+        total: `${quote.total_amount || 0}`,
       }).catch(console.error);
     }
   }
@@ -94,6 +94,18 @@ export async function convertQuoteToOrder(quoteId: string) {
 
   // Update quote status
   await supabase.from("quotes").update({ status: "accepted" }).eq("id", quoteId);
+
+  // Send WhatsApp order confirmation to customer
+  const customerPhone = quote.contact_phone?.replace(/[\s\-\+]/g, "");
+  if (customerPhone) {
+    sendOrderConfirmed({
+      customerPhone,
+      contactName: quote.contact_name || "Customer",
+      orderNumber: order.order_number,
+      itemCount: quote.quote_items?.length || 0,
+      total: `${quote.total_amount || 0}`,
+    }).catch(console.error);
+  }
 
   revalidatePath("/admin/quotes");
   revalidatePath("/admin/orders");

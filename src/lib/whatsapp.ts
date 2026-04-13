@@ -100,32 +100,6 @@ export async function sendQuoteConfirmation(data: {
   });
 }
 
-// Send order status update to customer
-export async function sendOrderUpdate(data: {
-  customerPhone: string;
-  orderNumber: string;
-  customerName: string;
-  status: string;
-}): Promise<boolean> {
-  return sendWhatsAppAPI(data.customerPhone, {
-    type: "template",
-    template: {
-      name: "order_update",
-      language: { code: "en_US" },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: data.orderNumber },
-            { type: "text", text: data.customerName },
-            { type: "text", text: data.status },
-          ],
-        },
-      ],
-    },
-  });
-}
-
 // Send PO notification to supplier — try template first, fall back to text
 export async function sendPOToSupplier(data: {
   supplierPhone: string;
@@ -166,34 +140,60 @@ export async function sendPOToSupplier(data: {
   });
 }
 
-// Send quote ready notification to customer
-export async function sendQuoteReady(data: {
+// Notify customer that quote pricing is ready
+export async function sendQuotePricingReady(data: {
   customerPhone: string;
   contactName: string;
   quoteNumber: string;
-  total: string;
   itemCount: number;
+  total: string;
 }): Promise<boolean> {
   return sendWhatsAppAPI(data.customerPhone, {
     type: "template",
     template: {
-      name: "quote_ready",
+      name: "quote_pricing_ready",
       language: { code: "en_US" },
       components: [{
         type: "body",
         parameters: [
           { type: "text", text: data.contactName },
           { type: "text", text: data.quoteNumber },
-          { type: "text", text: data.total },
           { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
+          { type: "text", text: data.total },
         ],
       }],
     },
   });
 }
 
-// Send invoice to customer
-export async function sendInvoiceNotification(data: {
+// Notify customer that their order is confirmed
+export async function sendOrderConfirmed(data: {
+  customerPhone: string;
+  contactName: string;
+  orderNumber: string;
+  itemCount: number;
+  total: string;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "order_confirmed",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: data.contactName },
+          { type: "text", text: data.orderNumber },
+          { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
+          { type: "text", text: data.total },
+        ],
+      }],
+    },
+  });
+}
+
+// Send invoice payment request to customer
+export async function sendInvoicePaymentRequest(data: {
   customerPhone: string;
   contactName: string;
   invoiceNumber: string;
@@ -203,7 +203,7 @@ export async function sendInvoiceNotification(data: {
   return sendWhatsAppAPI(data.customerPhone, {
     type: "template",
     template: {
-      name: "invoice_sent",
+      name: "invoice_payment_request",
       language: { code: "en_US" },
       components: [{
         type: "body",
@@ -218,8 +218,8 @@ export async function sendInvoiceNotification(data: {
   });
 }
 
-// Thank customer for payment
-export async function sendPaymentReceived(data: {
+// Confirm payment received to customer
+export async function sendPaymentConfirmed(data: {
   customerPhone: string;
   contactName: string;
   invoiceNumber: string;
@@ -228,7 +228,7 @@ export async function sendPaymentReceived(data: {
   return sendWhatsAppAPI(data.customerPhone, {
     type: "template",
     template: {
-      name: "payment_received",
+      name: "payment_confirmed",
       language: { code: "en_US" },
       components: [{
         type: "body",
@@ -242,25 +242,47 @@ export async function sendPaymentReceived(data: {
   });
 }
 
-// Notify customer of delivery status
-export async function sendDeliveryNotification(data: {
+// Notify customer that order has shipped
+export async function sendOrderShipped(data: {
   customerPhone: string;
   contactName: string;
   orderNumber: string;
-  status: string;
   itemCount: number;
 }): Promise<boolean> {
   return sendWhatsAppAPI(data.customerPhone, {
     type: "template",
     template: {
-      name: "delivery_notification",
+      name: "order_shipped",
       language: { code: "en_US" },
       components: [{
         type: "body",
         parameters: [
           { type: "text", text: data.contactName },
           { type: "text", text: data.orderNumber },
-          { type: "text", text: data.status },
+          { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
+        ],
+      }],
+    },
+  });
+}
+
+// Notify customer that order has been delivered
+export async function sendOrderDelivered(data: {
+  customerPhone: string;
+  contactName: string;
+  orderNumber: string;
+  itemCount: number;
+}): Promise<boolean> {
+  return sendWhatsAppAPI(data.customerPhone, {
+    type: "template",
+    template: {
+      name: "order_delivered",
+      language: { code: "en_US" },
+      components: [{
+        type: "body",
+        parameters: [
+          { type: "text", text: data.contactName },
+          { type: "text", text: data.orderNumber },
           { type: "text", text: `${data.itemCount} item${data.itemCount !== 1 ? "s" : ""}` },
         ],
       }],
