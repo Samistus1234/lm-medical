@@ -23,16 +23,18 @@ export async function updateInvoiceStatus(id: string, status: string) {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lmmedicalsolutions.org";
       const pdfUrl = `${baseUrl}/api/invoices/${id}/pdf?format=pdf`;
 
+      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
       if (status === "sent") {
-        // Send template message first, then PDF
+        // Send template message first, wait, then PDF
         sendInvoicePaymentRequest({
           customerPhone: phone,
           contactName: customer.contact_person || "Customer",
           invoiceNumber: invoice!.invoice_number,
           total: `${invoice!.total || 0}`,
           dueDate: invoice!.due_date || "N/A",
-        }).then(() => {
-          // Follow up with PDF document
+        }).then(async () => {
+          await delay(3000);
           sendWhatsAppDocument({
             to: phone,
             documentUrl: pdfUrl,
@@ -41,14 +43,14 @@ export async function updateInvoiceStatus(id: string, status: string) {
           }).catch(console.error);
         }).catch(console.error);
       } else if (status === "paid") {
-        // Send payment confirmation, then receipt PDF
+        // Send payment confirmation, wait, then receipt PDF
         sendPaymentConfirmed({
           customerPhone: phone,
           contactName: customer.contact_person || "Customer",
           invoiceNumber: invoice!.invoice_number,
           amount: `${invoice!.total || 0}`,
-        }).then(() => {
-          // Follow up with receipt PDF
+        }).then(async () => {
+          await delay(3000);
           sendWhatsAppDocument({
             to: phone,
             documentUrl: pdfUrl,
