@@ -121,8 +121,8 @@ function RevenueCards({
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-white rounded-[6px] p-5"
-          style={{ border: "1px solid #e5edf5" }}
+          className="bg-white rounded-[6px] p-5 transition-all duration-200 hover:shadow-md"
+          style={{ border: "1px solid #e5edf5", borderLeft: `3px solid ${card.color}` }}
         >
           <div className="flex items-start justify-between mb-3">
             <span className="text-xs font-normal" style={{ color: "#64748d" }}>
@@ -361,7 +361,8 @@ export function DashboardFinancials({
 }: DashboardFinancialsProps) {
   return (
     <div className="mb-8">
-      <h2 className="text-lg font-light mb-4" style={{ color: "#0a1628", letterSpacing: "-0.32px" }}>
+      <h2 className="text-lg font-light mb-4 flex items-center gap-2" style={{ color: "#0a1628", letterSpacing: "-0.32px" }}>
+        <span className="w-1 h-6 rounded-full inline-block" style={{ backgroundColor: "#10b981" }} />
         Financials Overview
       </h2>
 
@@ -376,16 +377,18 @@ export function DashboardFinancials({
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Revenue vs Costs */}
-        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
-          <h3 className="text-sm font-normal mb-4" style={{ color: "#273951" }}>
+        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5", borderTop: "3px solid #10b981" }}>
+          <h3 className="text-sm font-medium mb-4 flex items-center gap-2" style={{ color: "#273951" }}>
+            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#10b981" }} />
             Revenue vs Costs (Last 6 Months)
           </h3>
           <RevenueCostsChart data={monthlyFinancials} />
         </div>
 
         {/* Payment Status Donut */}
-        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
-          <h3 className="text-sm font-normal mb-4" style={{ color: "#273951" }}>
+        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5", borderTop: "3px solid #1a6bb5" }}>
+          <h3 className="text-sm font-medium mb-4 flex items-center gap-2" style={{ color: "#273951" }}>
+            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#1a6bb5" }} />
             Payment Status
           </h3>
           <PaymentStatusDonut data={invoiceStatusBreakdown} />
@@ -393,9 +396,10 @@ export function DashboardFinancials({
       </div>
 
       {/* Outstanding Invoices Table */}
-      <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
+      <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5", borderTop: "3px solid #f59e0b" }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-normal" style={{ color: "#273951" }}>
+          <h3 className="text-sm font-medium flex items-center gap-2" style={{ color: "#273951" }}>
+            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#f59e0b" }} />
             Outstanding Invoices
           </h3>
           <Link href="/admin/invoices" className="text-xs" style={{ color: "#1a6bb5" }}>

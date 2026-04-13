@@ -45,7 +45,7 @@ export function CustomerList({ customers }: { customers: Customer[] }) {
           <option value="distributor">Distributor</option>
           <option value="individual">Individual</option>
         </select>
-        <button onClick={() => setShowAdd(true)} className="px-4 py-2 text-sm text-white rounded-[4px] ml-auto" style={{ backgroundColor: "#1a6bb5" }}>
+        <button onClick={() => setShowAdd(true)} className="px-4 py-2 text-sm text-white rounded-[6px] ml-auto transition-all duration-200 hover:shadow-md" style={{ backgroundColor: "#1a6bb5", boxShadow: "0 1px 3px rgba(26,107,181,0.3)" }}>
           Add Customer
         </button>
       </div>
@@ -61,7 +61,7 @@ export function CustomerList({ customers }: { customers: Customer[] }) {
           </thead>
           <tbody>
             {filtered.map((c) => (
-              <tr key={c.id} className="cursor-pointer hover:bg-[#f8fafc] transition-colors" style={{ borderBottom: "1px solid #e5edf5" }}
+              <tr key={c.id} className="cursor-pointer hover:bg-[#f5f3ff] transition-colors" style={{ borderBottom: "1px solid #e5edf5" }}
                 onClick={() => router.push(`/admin/customers/${c.id}`)}>
                 <td className="px-4 py-3 font-normal" style={{ color: "#0a1628" }}>{c.name}</td>
                 <td className="px-4 py-3"><StatusBadge status={c.type} /></td>

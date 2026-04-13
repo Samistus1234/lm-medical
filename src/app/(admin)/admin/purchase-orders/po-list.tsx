@@ -41,13 +41,14 @@ export function POList({ purchaseOrders }: { purchaseOrders: PurchaseOrder[] }) 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-light" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>
+        <h1 className="text-3xl font-light flex items-center gap-3" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>
+          <span className="w-1 h-8 rounded-full inline-block" style={{ backgroundColor: "#14b8a6" }} />
           Purchase Orders
         </h1>
         <Link
           href="/admin/purchase-orders/new"
-          className="px-4 py-2 text-sm text-white rounded-[4px] transition-colors hover:opacity-90"
-          style={{ backgroundColor: "#1a6bb5" }}
+          className="px-4 py-2 text-sm text-white rounded-[6px] transition-all duration-200 hover:shadow-md"
+          style={{ backgroundColor: "#1a6bb5", boxShadow: "0 1px 3px rgba(26,107,181,0.3)" }}
         >
           New Purchase Order
         </Link>
@@ -70,7 +71,7 @@ export function POList({ purchaseOrders }: { purchaseOrders: PurchaseOrder[] }) 
           </thead>
           <tbody>
             {purchaseOrders.map((po) => (
-              <tr key={po.id} className="hover:bg-[#f8fafc]" style={{ borderBottom: "1px solid #e5edf5" }}>
+              <tr key={po.id} className="hover:bg-[#f0fdfa] transition-colors" style={{ borderBottom: "1px solid #e5edf5" }}>
                 <td className="px-4 py-3">
                   <Link href={`/admin/purchase-orders/${po.id}`} className="font-mono text-sm" style={{ color: "#1a6bb5" }}>
                     {po.po_number}

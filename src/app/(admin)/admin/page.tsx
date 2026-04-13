@@ -200,15 +200,28 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-3xl font-light mb-6" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>Dashboard</h1>
+      <h1 className="text-3xl font-light mb-6 flex items-center gap-3" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>
+        <span className="w-1 h-8 rounded-full inline-block" style={{ backgroundColor: "#1a6bb5" }} />
+        Dashboard
+      </h1>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <StatsCard label="Active Products" value={productCount || 0} />
-        <StatsCard label="Customers" value={customerCount || 0} />
-        <StatsCard label="Active Quotes" value={quoteCount || 0} subtitle="Pending, reviewed, or quoted" />
-        <StatsCard label="Active Orders" value={orderCount || 0} subtitle="Confirmed, processing, or shipped" />
-        <StatsCard label="Purchase Orders" value={purchaseOrderCount || 0} subtitle="Draft, sent, or confirmed" />
+        <StatsCard label="Active Products" value={productCount || 0} accentColor="#1a6bb5" icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        } />
+        <StatsCard label="Customers" value={customerCount || 0} accentColor="#8b5cf6" icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+        } />
+        <StatsCard label="Active Quotes" value={quoteCount || 0} subtitle="Pending, reviewed, or quoted" accentColor="#f97316" icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></svg>
+        } />
+        <StatsCard label="Active Orders" value={orderCount || 0} subtitle="Confirmed, processing, or shipped" accentColor="#10b981" icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        } />
+        <StatsCard label="Purchase Orders" value={purchaseOrderCount || 0} subtitle="Draft, sent, or confirmed" accentColor="#14b8a6" icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        } />
       </div>
 
       {/* Financials Overview */}
@@ -224,9 +237,12 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Pending Quotes */}
-        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
+        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5", borderTop: "3px solid #f97316" }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-normal" style={{ color: "#273951" }}>Pending Quotes</h3>
+            <h3 className="text-sm font-medium flex items-center gap-2" style={{ color: "#273951" }}>
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#f97316" }} />
+              Pending Quotes
+            </h3>
             <Link href="/admin/quotes" className="text-xs" style={{ color: "#1a6bb5" }}>View all</Link>
           </div>
           {pendingQuotes && pendingQuotes.length > 0 ? pendingQuotes.map((q) => (
@@ -241,9 +257,12 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
+        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5", borderTop: "3px solid #10b981" }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-normal" style={{ color: "#273951" }}>Recent Orders</h3>
+            <h3 className="text-sm font-medium flex items-center gap-2" style={{ color: "#273951" }}>
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#10b981" }} />
+              Recent Orders
+            </h3>
             <Link href="/admin/orders" className="text-xs" style={{ color: "#1a6bb5" }}>View all</Link>
           </div>
           {recentOrders && recentOrders.length > 0 ? recentOrders.map((o: any) => (
@@ -263,25 +282,38 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pipeline Summary */}
-        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
+        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5", borderTop: "3px solid #6366f1" }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-normal" style={{ color: "#273951" }}>Pipeline</h3>
+            <h3 className="text-sm font-medium flex items-center gap-2" style={{ color: "#273951" }}>
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#6366f1" }} />
+              Pipeline
+            </h3>
             <Link href="/admin/pipeline" className="text-xs" style={{ color: "#1a6bb5" }}>View all</Link>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {pipelineSummary.map((s) => (
-              <div key={s.stage} className="text-center p-3 rounded-[4px]" style={{ backgroundColor: "#f8fafc" }}>
-                <p className="text-xl font-light" style={{ color: "#0a1628" }}>{s.count}</p>
-                <p className="text-xs capitalize" style={{ color: "#64748d" }}>{s.stage}</p>
-              </div>
-            ))}
+            {pipelineSummary.map((s) => {
+              const stageColors: Record<string, string> = {
+                lead: "#94a3b8", contacted: "#2a8fd4", proposal: "#f97316",
+                negotiation: "#f59e0b", won: "#8b5cf6", lost: "#ea2261",
+              };
+              const color = stageColors[s.stage] || "#64748d";
+              return (
+                <div key={s.stage} className="text-center p-3 rounded-[4px]" style={{ backgroundColor: "#f8fafc", borderBottom: `2px solid ${color}` }}>
+                  <p className="text-xl font-light" style={{ color: "#0a1628" }}>{s.count}</p>
+                  <p className="text-xs capitalize" style={{ color }}>{s.stage}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5" }}>
+        <div className="bg-white rounded-[6px] p-6" style={{ border: "1px solid #e5edf5", borderTop: "3px solid #ea2261" }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-normal" style={{ color: "#273951" }}>Low Stock Alerts</h3>
+            <h3 className="text-sm font-medium flex items-center gap-2" style={{ color: "#273951" }}>
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#ea2261" }} />
+              Low Stock Alerts
+            </h3>
             <div className="flex items-center gap-3">
               <Link href="/admin/purchase-orders/new" className="text-xs px-2 py-1 rounded-[4px] text-white" style={{ backgroundColor: "#1a6bb5" }}>Create Purchase Order</Link>
               <Link href="/admin/inventory" className="text-xs" style={{ color: "#1a6bb5" }}>View all</Link>

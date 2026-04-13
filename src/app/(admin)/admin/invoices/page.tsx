@@ -27,7 +27,10 @@ export default function InvoicesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-light mb-6" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>Invoices</h1>
+      <h1 className="text-3xl font-light mb-6 flex items-center gap-3" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>
+        <span className="w-1 h-8 rounded-full inline-block" style={{ backgroundColor: "#10b981" }} />
+        Invoices
+      </h1>
       <div className="overflow-x-auto rounded-[6px]" style={{ border: "1px solid #e5edf5" }}>
         <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
           <thead>
@@ -39,7 +42,7 @@ export default function InvoicesPage() {
           </thead>
           <tbody>
             {invoices.map((inv) => (
-              <tr key={inv.id} style={{ borderBottom: "1px solid #e5edf5" }}>
+              <tr key={inv.id} className="hover:bg-[#f0fdf4] transition-colors" style={{ borderBottom: "1px solid #e5edf5" }}>
                 <td className="px-4 py-3 font-mono text-sm" style={{ color: "#1a6bb5" }}>{inv.invoice_number}</td>
                 <td className="px-4 py-3" style={{ color: "#64748d" }}>{inv.orders?.order_number || "—"}</td>
                 <td className="px-4 py-3" style={{ color: "#0a1628" }}>{inv.customers?.name || "—"}</td>

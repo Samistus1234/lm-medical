@@ -11,7 +11,10 @@ export default async function QuotesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-light mb-6" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>Quotes</h1>
+      <h1 className="text-3xl font-light mb-6 flex items-center gap-3" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>
+        <span className="w-1 h-8 rounded-full inline-block" style={{ backgroundColor: "#f97316" }} />
+        Quotes
+      </h1>
 
       <div className="overflow-x-auto rounded-[6px]" style={{ border: "1px solid #e5edf5" }}>
         <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
@@ -24,7 +27,7 @@ export default async function QuotesPage() {
           </thead>
           <tbody>
             {quotes?.map((q) => (
-              <tr key={q.id} className="hover:bg-[#f8fafc] transition-colors" style={{ borderBottom: "1px solid #e5edf5" }}>
+              <tr key={q.id} className="hover:bg-[#fff7ed] transition-colors" style={{ borderBottom: "1px solid #e5edf5" }}>
                 <td className="px-4 py-3">
                   <Link href={`/admin/quotes/${q.id}`} className="font-mono text-sm" style={{ color: "#1a6bb5" }}>{q.quote_number}</Link>
                 </td>

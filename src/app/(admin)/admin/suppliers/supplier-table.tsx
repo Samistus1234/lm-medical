@@ -106,8 +106,8 @@ export function SupplierTable({ suppliers }: SupplierTableProps) {
         />
         <button
           onClick={() => setShowAdd(true)}
-          className="px-4 py-2 text-sm text-white rounded-[4px] ml-auto"
-          style={{ backgroundColor: "#1a6bb5" }}
+          className="px-4 py-2 text-sm text-white rounded-[6px] ml-auto transition-all duration-200 hover:shadow-md"
+          style={{ backgroundColor: "#1a6bb5", boxShadow: "0 1px 3px rgba(26,107,181,0.3)" }}
         >
           Add Supplier
         </button>
@@ -127,7 +127,7 @@ export function SupplierTable({ suppliers }: SupplierTableProps) {
           </thead>
           <tbody>
             {filtered.map((s) => (
-              <tr key={s.id} style={{ borderBottom: "1px solid #e5edf5" }}>
+              <tr key={s.id} className="hover:bg-[#f0fdfa] transition-colors" style={{ borderBottom: "1px solid #e5edf5" }}>
                 <td className="px-3 py-2 font-medium" style={{ color: "#0a1628" }}>{s.name}</td>
                 <td className="px-3 py-2" style={{ color: "#64748d" }}>{s.contact_person || "—"}</td>
                 <td className="px-3 py-2" style={{ color: "#64748d" }}>{s.email || "—"}</td>
