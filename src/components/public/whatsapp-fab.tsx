@@ -1,6 +1,7 @@
 export function WhatsAppFAB() {
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/[^0-9]/g, "") ?? "";
   const message = encodeURIComponent("Hello, I'm interested in L&M Medical Solutions products.");
-  const href = `https://wa.me/?text=${message}`;
+  const href = `https://wa.me/${phone}?text=${message}`;
 
   return (
     <a href={href} target="_blank" rel="noopener noreferrer"
