@@ -140,22 +140,21 @@ export function NewInvoiceModal({
     // If we asked to notify, surface what actually fired so the admin
     // can tell if WhatsApp/email delivery silently failed.
     if (sendNow && "send" in result && result.send) {
-      const send = result.send;
-      const parts: string[] = [];
-      if (send.waResult === true) parts.push("WhatsApp template ✓");
-      else if (send.waResult === false) parts.push("WhatsApp template ✗ (check logs)");
-      if (send.waDocResult === true) parts.push("PDF doc ✓");
-      else if (send.waDocResult === false) parts.push("PDF doc ✗");
-      if (send.emailResult === true) parts.push("Email ✓");
-      else if (send.emailResult === false) parts.push("Email ✗");
-      if (send.waResult === "skipped" && send.emailResult === "skipped") {
-        parts.push("No phone/email on customer — nothing sent");
-      }
+      const send = result.send as {
+        waResult: { ok: boolean; reason?: string };
+        waDocResult: { ok: boolean; reason?: string };
+        emailResult: { ok: boolean; reason?: string };
+      };
+      const fmt = (label: string, r: { ok: boolean; reason?: string }) =>
+        r.ok ? `${label} ✓` : `${label} ✗ ${r.reason ? `(${r.reason})` : ""}`;
+      const parts = [
+        fmt("WhatsApp template", send.waResult),
+        fmt("PDF doc", send.waDocResult),
+        fmt("Email", send.emailResult),
+      ];
       setNotice(`Invoice created. ${parts.join(" · ")}`);
-      setTimeout(() => {
-        onCreated();
-        onClose();
-      }, 2200);
+      // Don't auto-close so the admin can read the diagnosis.
+      onCreated();
       return;
     }
 

@@ -1,8 +1,34 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { sendInvoicePaymentRequest, sendPaymentConfirmed, sendWhatsAppDocument } from "@/lib/whatsapp";
 import { sendEmail, buildInvoiceEmail, buildReceiptEmail } from "@/lib/email";
+
+type SendOutcome = { ok: boolean; reason?: string };
+
+async function waSend(payload: Record<string, unknown>, to: string): Promise<SendOutcome> {
+  const phoneId = process.env.WHATSAPP_PHONE_ID;
+  const token = process.env.WHATSAPP_API_TOKEN;
+  if (!phoneId || !token) return { ok: false, reason: "WhatsApp credentials missing in env" };
+
+  try {
+    const res = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ messaging_product: "whatsapp", to, ...payload }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      const msg =
+        body?.error?.error_data?.details ||
+        body?.error?.message ||
+        `HTTP ${res.status}`;
+      return { ok: false, reason: msg };
+    }
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, reason: err?.message || "fetch failed" };
+  }
+}
 
 interface NewInvoiceItem {
   product_id?: string | null;
@@ -113,9 +139,9 @@ export async function updateInvoiceStatus(id: string, status: string) {
   const { error } = await supabase.from("invoices").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
-  let waResult: boolean | "skipped" = "skipped";
-  let waDocResult: boolean | "skipped" = "skipped";
-  let emailResult: boolean | "skipped" = "skipped";
+  let waResult: SendOutcome = { ok: false, reason: "skipped" };
+  let waDocResult: SendOutcome = { ok: false, reason: "skipped" };
+  let emailResult: SendOutcome = { ok: false, reason: "skipped" };
 
   if (status === "sent" || status === "paid") {
     const { data: invoice } = await supabase
@@ -130,44 +156,55 @@ export async function updateInvoiceStatus(id: string, status: string) {
     const totalStr = `${invoice!.total || 0}`;
     const currency = (invoice as any)?.currency || "USD";
 
-    // WhatsApp — must be awaited so Vercel doesn't kill the in-flight fetch.
     if (customer?.phone) {
       const phone = customer.phone.replace(/[\s\-\+]/g, "");
       const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-      if (status === "sent") {
-        waResult = await sendInvoicePaymentRequest({
-          customerPhone: phone,
-          contactName,
-          invoiceNumber: invoice!.invoice_number,
-          total: totalStr,
-          dueDate: invoice!.due_date || "N/A",
-        });
+      const templateName = status === "sent" ? "invoice_payment_request" : "payment_confirmed";
+      const templateParams = status === "sent"
+        ? [contactName, invoice!.invoice_number, totalStr, invoice!.due_date || "N/A"]
+        : [contactName, invoice!.invoice_number, totalStr];
+
+      waResult = await waSend(
+        {
+          type: "template",
+          template: {
+            name: templateName,
+            language: { code: "en_US" },
+            components: [
+              {
+                type: "body",
+                parameters: templateParams.map((t) => ({ type: "text", text: String(t) })),
+              },
+            ],
+          },
+        },
+        phone
+      );
+
+      if (waResult.ok) {
         await delay(1500);
-        waDocResult = await sendWhatsAppDocument({
-          to: phone,
-          documentUrl: pdfUrl,
-          filename: `Invoice-${invoice!.invoice_number}.pdf`,
-          caption: `Invoice ${invoice!.invoice_number} — L&M Medical Solutions`,
-        });
+        waDocResult = await waSend(
+          {
+            type: "document",
+            document: {
+              link: pdfUrl,
+              filename: `${status === "sent" ? "Invoice" : "Receipt"}-${invoice!.invoice_number}.pdf`,
+              caption: status === "sent"
+                ? `Invoice ${invoice!.invoice_number} — L&M Medical Solutions`
+                : `Payment Receipt — ${invoice!.invoice_number}`,
+            },
+          },
+          phone
+        );
       } else {
-        waResult = await sendPaymentConfirmed({
-          customerPhone: phone,
-          contactName,
-          invoiceNumber: invoice!.invoice_number,
-          amount: totalStr,
-        });
-        await delay(1500);
-        waDocResult = await sendWhatsAppDocument({
-          to: phone,
-          documentUrl: pdfUrl,
-          filename: `Receipt-${invoice!.invoice_number}.pdf`,
-          caption: `Payment Receipt — ${invoice!.invoice_number}`,
-        });
+        waDocResult = { ok: false, reason: "skipped (template failed)" };
       }
+    } else {
+      waResult = { ok: false, reason: "no phone on customer" };
+      waDocResult = { ok: false, reason: "no phone on customer" };
     }
 
-    // Email — same notification with PDF link.
     if (customer?.email) {
       const built = status === "sent"
         ? buildInvoiceEmail({
@@ -185,7 +222,10 @@ export async function updateInvoiceStatus(id: string, status: string) {
             currency,
             pdfUrl,
           });
-      emailResult = await sendEmail({ to: customer.email, ...built });
+      const ok = await sendEmail({ to: customer.email, ...built });
+      emailResult = ok ? { ok: true } : { ok: false, reason: "SMTP send failed" };
+    } else {
+      emailResult = { ok: false, reason: "no email on customer" };
     }
   }
 
