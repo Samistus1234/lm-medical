@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sendInvoicePaymentRequest, sendPaymentConfirmed, sendWhatsAppDocument } from "@/lib/whatsapp";
+import { sendEmail, buildInvoiceEmail, buildReceiptEmail } from "@/lib/email";
 
 interface NewInvoiceItem {
   product_id?: string | null;
@@ -85,12 +86,24 @@ export async function createStandaloneInvoice(input: NewInvoiceInput) {
   revalidatePath("/admin/invoices");
   revalidatePath("/admin");
 
+  let send: { waResult?: any; waDocResult?: any; emailResult?: any } | undefined;
   if (input.send_now) {
-    // Reuse the existing send flow (template + PDF).
-    await updateInvoiceStatus(invoice.id, "sent");
+    const result = await updateInvoiceStatus(invoice.id, "sent");
+    if ("waResult" in result) {
+      send = {
+        waResult: result.waResult,
+        waDocResult: result.waDocResult,
+        emailResult: result.emailResult,
+      };
+    }
   }
 
-  return { success: true, invoiceId: invoice.id, invoiceNumber: invoice.invoice_number };
+  return {
+    success: true,
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.invoice_number,
+    send,
+  };
 }
 
 export async function updateInvoiceStatus(id: string, status: string) {
@@ -100,58 +113,82 @@ export async function updateInvoiceStatus(id: string, status: string) {
   const { error } = await supabase.from("invoices").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
-  // Send WhatsApp notifications for invoice status changes
+  let waResult: boolean | "skipped" = "skipped";
+  let waDocResult: boolean | "skipped" = "skipped";
+  let emailResult: boolean | "skipped" = "skipped";
+
   if (status === "sent" || status === "paid") {
     const { data: invoice } = await supabase
       .from("invoices")
-      .select("invoice_number, total, due_date, customers(contact_person, phone)")
+      .select("invoice_number, total, currency, due_date, customers(contact_person, phone, email)")
       .eq("id", id)
       .single();
     const customer = (invoice as any)?.customers;
+    const contactName = customer?.contact_person || "Customer";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lmmedicalsolutions.org";
+    const pdfUrl = `${baseUrl}/api/invoices/${id}/pdf?format=pdf`;
+    const totalStr = `${invoice!.total || 0}`;
+    const currency = (invoice as any)?.currency || "USD";
+
+    // WhatsApp — must be awaited so Vercel doesn't kill the in-flight fetch.
     if (customer?.phone) {
       const phone = customer.phone.replace(/[\s\-\+]/g, "");
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lmmedicalsolutions.org";
-      const pdfUrl = `${baseUrl}/api/invoices/${id}/pdf?format=pdf`;
-
-      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+      const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
       if (status === "sent") {
-        // Send template message first, wait, then PDF
-        sendInvoicePaymentRequest({
+        waResult = await sendInvoicePaymentRequest({
           customerPhone: phone,
-          contactName: customer.contact_person || "Customer",
+          contactName,
           invoiceNumber: invoice!.invoice_number,
-          total: `${invoice!.total || 0}`,
+          total: totalStr,
           dueDate: invoice!.due_date || "N/A",
-        }).then(async () => {
-          await delay(3000);
-          sendWhatsAppDocument({
-            to: phone,
-            documentUrl: pdfUrl,
-            filename: `Invoice-${invoice!.invoice_number}.pdf`,
-            caption: `Invoice ${invoice!.invoice_number} — L&M Medical Solutions`,
-          }).catch(console.error);
-        }).catch(console.error);
-      } else if (status === "paid") {
-        // Send payment confirmation, wait, then receipt PDF
-        sendPaymentConfirmed({
+        });
+        await delay(1500);
+        waDocResult = await sendWhatsAppDocument({
+          to: phone,
+          documentUrl: pdfUrl,
+          filename: `Invoice-${invoice!.invoice_number}.pdf`,
+          caption: `Invoice ${invoice!.invoice_number} — L&M Medical Solutions`,
+        });
+      } else {
+        waResult = await sendPaymentConfirmed({
           customerPhone: phone,
-          contactName: customer.contact_person || "Customer",
+          contactName,
           invoiceNumber: invoice!.invoice_number,
-          amount: `${invoice!.total || 0}`,
-        }).then(async () => {
-          await delay(3000);
-          sendWhatsAppDocument({
-            to: phone,
-            documentUrl: pdfUrl,
-            filename: `Receipt-${invoice!.invoice_number}.pdf`,
-            caption: `Payment Receipt — ${invoice!.invoice_number}`,
-          }).catch(console.error);
-        }).catch(console.error);
+          amount: totalStr,
+        });
+        await delay(1500);
+        waDocResult = await sendWhatsAppDocument({
+          to: phone,
+          documentUrl: pdfUrl,
+          filename: `Receipt-${invoice!.invoice_number}.pdf`,
+          caption: `Payment Receipt — ${invoice!.invoice_number}`,
+        });
       }
+    }
+
+    // Email — same notification with PDF link.
+    if (customer?.email) {
+      const built = status === "sent"
+        ? buildInvoiceEmail({
+            contactName,
+            invoiceNumber: invoice!.invoice_number,
+            total: totalStr,
+            currency,
+            dueDate: invoice!.due_date || "N/A",
+            pdfUrl,
+          })
+        : buildReceiptEmail({
+            contactName,
+            invoiceNumber: invoice!.invoice_number,
+            amount: totalStr,
+            currency,
+            pdfUrl,
+          });
+      emailResult = await sendEmail({ to: customer.email, ...built });
     }
   }
 
   revalidatePath("/admin/invoices");
-  return { success: true };
+  return { success: true, waResult, waDocResult, emailResult };
 }

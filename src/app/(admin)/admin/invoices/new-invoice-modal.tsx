@@ -58,6 +58,7 @@ export function NewInvoiceModal({
   const [sendNow, setSendNow] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || loaded) return;
@@ -135,6 +136,29 @@ export function NewInvoiceModal({
       setError(result.error);
       return;
     }
+
+    // If we asked to notify, surface what actually fired so the admin
+    // can tell if WhatsApp/email delivery silently failed.
+    if (sendNow && "send" in result && result.send) {
+      const send = result.send;
+      const parts: string[] = [];
+      if (send.waResult === true) parts.push("WhatsApp template ✓");
+      else if (send.waResult === false) parts.push("WhatsApp template ✗ (check logs)");
+      if (send.waDocResult === true) parts.push("PDF doc ✓");
+      else if (send.waDocResult === false) parts.push("PDF doc ✗");
+      if (send.emailResult === true) parts.push("Email ✓");
+      else if (send.emailResult === false) parts.push("Email ✗");
+      if (send.waResult === "skipped" && send.emailResult === "skipped") {
+        parts.push("No phone/email on customer — nothing sent");
+      }
+      setNotice(`Invoice created. ${parts.join(" · ")}`);
+      setTimeout(() => {
+        onCreated();
+        onClose();
+      }, 2200);
+      return;
+    }
+
     onCreated();
     onClose();
   }
@@ -361,12 +385,17 @@ export function NewInvoiceModal({
             checked={sendNow}
             onChange={(e) => setSendNow(e.target.checked)}
           />
-          Send WhatsApp invoice + PDF immediately
+          Notify customer immediately (WhatsApp template + PDF + Email)
         </label>
 
         {error && (
           <div className="px-3 py-2 rounded-[4px] text-sm" style={{ backgroundColor: "#fee2e2", color: "#991b1b" }}>
             {error}
+          </div>
+        )}
+        {notice && (
+          <div className="px-3 py-2 rounded-[4px] text-sm" style={{ backgroundColor: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0" }}>
+            {notice}
           </div>
         )}
 

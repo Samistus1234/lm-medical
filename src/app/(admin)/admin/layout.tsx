@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/admin/sidebar";
 import { Topbar } from "@/components/admin/topbar";
 
+// Server actions on this segment may issue WhatsApp template + PDF + email in series.
+export const maxDuration = 30;
+
 export default async function AdminLayout({
   children,
 }: {
