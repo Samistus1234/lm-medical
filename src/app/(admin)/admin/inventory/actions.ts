@@ -39,3 +39,31 @@ export async function deleteProduct(id: string) {
   revalidatePath("/admin/inventory");
   return { success: true };
 }
+
+interface BulkProductInput {
+  item_code: string;
+  item_name: string;
+  category: string;
+  variant: string | null;
+  stock_qty: number;
+  supplier_id: string | null;
+}
+
+export async function createProductsBulk(rows: BulkProductInput[]) {
+  if (!rows.length) return { error: "no rows" };
+  const supabase = await createClient();
+  const payload = rows.map((r) => ({
+    ...r,
+    cost_price_sdg: 0,
+    sale_price_sdg: 0,
+    cost_price_usd: 0,
+    sale_price_usd: 0,
+    is_active: true,
+  }));
+  const { error, count } = await supabase
+    .from("products")
+    .upsert(payload, { onConflict: "item_code", count: "exact" });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/inventory");
+  return { success: true, count: count ?? rows.length };
+}

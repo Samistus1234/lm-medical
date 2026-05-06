@@ -4,6 +4,7 @@ import { useState } from "react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/admin/modal";
 import { updateProduct, createProduct } from "./actions";
+import { AddProductForm } from "./add-product-form";
 
 interface Supplier {
   id: string;
@@ -174,33 +175,7 @@ export function InventoryTable({ products, categories, suppliers }: InventoryTab
 
       {/* Add Product Modal */}
       <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Product">
-        <form action={async (formData) => { await createProduct(formData); setShowAdd(false); }} className="space-y-4">
-          {[
-            { name: "item_code", label: "Item Code", required: true },
-            { name: "item_name", label: "Item Name", required: true },
-            { name: "category", label: "Category", required: true },
-            { name: "variant", label: "Variant / Size" },
-            { name: "stock_qty", label: "Stock Qty", type: "number" },
-            { name: "cost_price_sdg", label: "Cost Price (SDG)", type: "number" },
-            { name: "sale_price_sdg", label: "Sale Price (SDG)", type: "number" },
-            { name: "cost_price_usd", label: "Cost Price (USD)", type: "number" },
-            { name: "sale_price_usd", label: "Sale Price (USD)", type: "number" },
-            { name: "notes", label: "Notes" },
-          ].map((f) => (
-            <div key={f.name}>
-              <label className="block text-sm mb-1" style={{ color: "#273951" }}>{f.label}{f.required && " *"}</label>
-              <input name={f.name} type={f.type || "text"} required={f.required} className="w-full px-3 py-2 border rounded-[4px] text-sm focus:outline-none focus:border-[#1a6bb5]" style={{ borderColor: "#e5edf5", color: "#0a1628" }} />
-            </div>
-          ))}
-          <div>
-            <label className="block text-sm mb-1" style={{ color: "#273951" }}>Supplier</label>
-            <select name="supplier_id" className="w-full px-3 py-2 border rounded-[4px] text-sm focus:outline-none focus:border-[#1a6bb5]" style={{ borderColor: "#e5edf5", color: "#0a1628" }}>
-              <option value="">No Supplier</option>
-              {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          <button type="submit" className="w-full py-2 text-white rounded-[4px]" style={{ backgroundColor: "#1a6bb5" }}>Add Product</button>
-        </form>
+        <AddProductForm suppliers={suppliers} onDone={() => setShowAdd(false)} />
       </Modal>
     </>
   );
