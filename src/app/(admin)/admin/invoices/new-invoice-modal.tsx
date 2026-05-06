@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Modal } from "@/components/admin/modal";
 import { createClient } from "@/lib/supabase/client";
 import { createStandaloneInvoice } from "./actions";
@@ -295,19 +295,12 @@ export function NewInvoiceModal({
           <div className="space-y-2">
             {items.map((it, idx) => (
               <div key={idx} className="rounded-[4px] p-3 space-y-2" style={{ border: "1px solid #e5edf5", backgroundColor: "#f8fafc" }}>
-                <select
-                  value={it.product_id || ""}
-                  onChange={(e) => pickProduct(idx, e.target.value)}
-                  className="w-full px-2 py-1.5 border rounded-[4px] text-xs focus:outline-none focus:border-[#1a6bb5]"
-                  style={{ borderColor: "#e5edf5", color: "#0a1628" }}
-                >
-                  <option value="">— Pick product or enter custom description —</option>
-                  {products.slice(0, 200).map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.item_code} — {p.item_name}{p.variant ? ` (${p.variant})` : ""}
-                    </option>
-                  ))}
-                </select>
+                <ProductPicker
+                  products={products}
+                  selectedId={it.product_id}
+                  onPick={(pid) => pickProduct(idx, pid)}
+                  onClear={() => updateItem(idx, { product_id: null, description: "", unit_price: 0 })}
+                />
                 <input
                   type="text"
                   placeholder="Description"
@@ -419,5 +412,157 @@ export function NewInvoiceModal({
         </div>
       </form>
     </Modal>
+  );
+}
+
+function ProductPicker({
+  products,
+  selectedId,
+  onPick,
+  onClear,
+}: {
+  products: ProductLite[];
+  selectedId: string | null;
+  onPick: (id: string) => void;
+  onClear: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selected = useMemo(
+    () => products.find((p) => p.id === selectedId) || null,
+    [products, selectedId],
+  );
+
+  const filtered = useMemo(() => {
+    const s = query.trim().toLowerCase();
+    if (!s) return products.slice(0, 50);
+    const tokens = s.split(/\s+/);
+    return products
+      .filter((p) => {
+        const hay = `${p.item_code} ${p.item_name} ${p.variant ?? ""}`.toLowerCase();
+        return tokens.every((t) => hay.includes(t));
+      })
+      .slice(0, 50);
+  }, [products, query]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  // Reset highlight when filter changes
+  useEffect(() => {
+    setActiveIdx(0);
+  }, [query]);
+
+  function pick(p: ProductLite) {
+    onPick(p.id);
+    setQuery("");
+    setOpen(false);
+  }
+
+  function handleKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setOpen(true);
+      setActiveIdx((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const target = filtered[activeIdx];
+      if (target) pick(target);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      {selected ? (
+        <div
+          className="flex items-center gap-2 px-2 py-1.5 border rounded-[4px] text-xs"
+          style={{ borderColor: "#1a6bb5", backgroundColor: "white", color: "#0a1628" }}
+        >
+          <span className="font-mono" style={{ color: "#1a6bb5" }}>
+            {selected.item_code}
+          </span>
+          <span className="flex-1 truncate">
+            {selected.item_name}
+            {selected.variant ? ` (${selected.variant})` : ""}
+          </span>
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-xs px-1.5 py-0.5 rounded hover:bg-[#f1f5f9]"
+            style={{ color: "#64748d" }}
+          >
+            change
+          </button>
+        </div>
+      ) : (
+        <>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={handleKey}
+            placeholder="Search products by code, name, or variant…"
+            className="w-full px-2 py-1.5 border rounded-[4px] text-xs focus:outline-none focus:border-[#1a6bb5]"
+            style={{ borderColor: "#e5edf5", color: "#0a1628" }}
+          />
+          {open && (
+            <div
+              className="absolute z-10 mt-1 w-full bg-white rounded-[4px] shadow-lg max-h-64 overflow-auto"
+              style={{ border: "1px solid #e5edf5" }}
+            >
+              {filtered.length === 0 ? (
+                <div className="px-2 py-2 text-xs" style={{ color: "#94a3b8" }}>
+                  No matches — type a description below for a custom line.
+                </div>
+              ) : (
+                filtered.map((p, i) => (
+                  <button
+                    type="button"
+                    key={p.id}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pick(p);
+                    }}
+                    onMouseEnter={() => setActiveIdx(i)}
+                    className="w-full text-left px-2 py-1.5 text-xs flex items-center gap-2"
+                    style={{
+                      backgroundColor: i === activeIdx ? "#e8f4fd" : "transparent",
+                      color: "#0a1628",
+                    }}
+                  >
+                    <span className="font-mono" style={{ color: "#1a6bb5" }}>
+                      {p.item_code}
+                    </span>
+                    <span className="flex-1 truncate">
+                      {p.item_name}
+                      {p.variant ? ` (${p.variant})` : ""}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }
