@@ -15,7 +15,7 @@ export async function GET(
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "*, customers(name, email, phone, address, city, country), orders(order_number, order_items(*, products(item_code, item_name, variant)))"
+      "*, customers(name, email, phone, address, city, country), orders(order_number, order_items(*, products(item_code, item_name, variant))), invoice_items(*, products(item_code, item_name, variant))"
     )
     .eq("id", id)
     .single();
@@ -24,7 +24,16 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
-  const items = invoice.orders?.order_items || [];
+  // Standalone invoices store items in invoice_items; order-based invoices
+  // still resolve them via orders.order_items.
+  const standaloneItems = (invoice.invoice_items || []).map((it: any) => ({
+    quantity: it.quantity,
+    unit_price: it.unit_price,
+    total: it.total,
+    products: it.products || (it.description ? { item_code: "", item_name: it.description, variant: null } : null),
+  }));
+  const orderBasedItems = invoice.orders?.order_items || [];
+  const items = standaloneItems.length > 0 ? standaloneItems : orderBasedItems;
   const issueDate = new Date(invoice.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const dueDate = new Date(invoice.due_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const paidDate = invoice.paid_at && new Date(invoice.paid_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });

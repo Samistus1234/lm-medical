@@ -3,6 +3,96 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sendInvoicePaymentRequest, sendPaymentConfirmed, sendWhatsAppDocument } from "@/lib/whatsapp";
 
+interface NewInvoiceItem {
+  product_id?: string | null;
+  description?: string | null;
+  quantity: number;
+  unit_price: number;
+}
+
+interface NewInvoiceInput {
+  customer_id?: string | null;
+  new_customer?: {
+    name: string;
+    contact_person?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+  currency: "USD" | "SDG";
+  due_date: string;
+  items: NewInvoiceItem[];
+  send_now?: boolean;
+}
+
+export async function createStandaloneInvoice(input: NewInvoiceInput) {
+  const supabase = await createClient();
+
+  let customerId = input.customer_id || null;
+  if (!customerId) {
+    if (!input.new_customer?.name) return { error: "Customer is required" };
+    const { data: cust, error: cErr } = await supabase
+      .from("customers")
+      .insert({
+        name: input.new_customer.name,
+        contact_person: input.new_customer.contact_person || null,
+        email: input.new_customer.email || null,
+        phone: input.new_customer.phone || null,
+      })
+      .select("id")
+      .single();
+    if (cErr) return { error: cErr.message };
+    customerId = cust.id;
+  }
+
+  const items = (input.items || []).filter(
+    (it) => (it.product_id || it.description) && it.quantity > 0
+  );
+  if (items.length === 0) return { error: "Add at least one line item" };
+
+  const subtotal = items.reduce(
+    (sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0),
+    0
+  );
+
+  const { data: invoice, error: iErr } = await supabase
+    .from("invoices")
+    .insert({
+      invoice_number: "",
+      order_id: null,
+      customer_id: customerId,
+      currency: input.currency,
+      subtotal,
+      tax: 0,
+      total: subtotal,
+      due_date: input.due_date,
+      status: "draft",
+    })
+    .select("id, invoice_number")
+    .single();
+  if (iErr) return { error: iErr.message };
+
+  const itemRows = items.map((it) => ({
+    invoice_id: invoice.id,
+    product_id: it.product_id || null,
+    description: it.description || null,
+    quantity: it.quantity,
+    unit_price: it.unit_price,
+    total: (Number(it.quantity) || 0) * (Number(it.unit_price) || 0),
+  }));
+  const { error: itErr } = await supabase.from("invoice_items").insert(itemRows);
+  if (itErr) return { error: itErr.message };
+
+  revalidatePath("/admin/invoices");
+  revalidatePath("/admin");
+
+  if (input.send_now) {
+    // Reuse the existing send flow (template + PDF).
+    await updateInvoiceStatus(invoice.id, "sent");
+  }
+
+  return { success: true, invoiceId: invoice.id, invoiceNumber: invoice.invoice_number };
+}
+
 export async function updateInvoiceStatus(id: string, status: string) {
   const supabase = await createClient();
   const updates: any = { status };

@@ -402,9 +402,18 @@ export function DashboardFinancials({
             <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: "#f59e0b" }} />
             Outstanding Invoices
           </h3>
-          <Link href="/admin/invoices" className="text-xs" style={{ color: "#1a6bb5" }}>
-            View all
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/invoices?new=1"
+              className="text-xs px-2 py-1 rounded-[4px] text-white"
+              style={{ backgroundColor: "#1a6bb5" }}
+            >
+              + New Invoice
+            </Link>
+            <Link href="/admin/invoices" className="text-xs" style={{ color: "#1a6bb5" }}>
+              View all
+            </Link>
+          </div>
         </div>
         <OutstandingInvoicesTable invoices={outstandingInvoices} />
       </div>

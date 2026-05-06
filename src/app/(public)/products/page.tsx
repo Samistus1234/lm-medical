@@ -28,7 +28,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
     .order("item_name");
 
   if (params.category) {
-    query = query.eq("category", params.category);
+    query = query.ilike("category", `%${params.category}%`);
   }
 
   if (params.search) {

@@ -1,36 +1,64 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { updateInvoiceStatus } from "./actions";
+import { NewInvoiceModal } from "./new-invoice-modal";
 
 export default function InvoicesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNew, setShowNew] = useState(false);
+
+  async function refresh() {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("invoices")
+      .select("*, customers(name), orders(order_number)")
+      .order("created_at", { ascending: false });
+    setInvoices(data || []);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.from("invoices").select("*, customers(name), orders(order_number)")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => { setInvoices(data || []); setLoading(false); });
+    refresh();
   }, []);
+
+  // Auto-open modal when arriving from /admin?new=1 (dashboard quick-action).
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setShowNew(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("new");
+      router.replace(`/admin/invoices${params.toString() ? `?${params.toString()}` : ""}`);
+    }
+  }, [searchParams, router]);
 
   async function handleStatusChange(id: string, status: string) {
     await updateInvoiceStatus(id, status);
-    // Refresh
-    const supabase = createClient();
-    const { data } = await supabase.from("invoices").select("*, customers(name), orders(order_number)").order("created_at", { ascending: false });
-    setInvoices(data || []);
+    refresh();
   }
 
   if (loading) return <div className="py-16 text-center" style={{ color: "#64748d" }}>Loading...</div>;
 
   return (
     <div>
-      <h1 className="text-3xl font-light mb-6 flex items-center gap-3" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>
-        <span className="w-1 h-8 rounded-full inline-block" style={{ backgroundColor: "#10b981" }} />
-        Invoices
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-light flex items-center gap-3" style={{ color: "#0a1628", letterSpacing: "-0.64px" }}>
+          <span className="w-1 h-8 rounded-full inline-block" style={{ backgroundColor: "#10b981" }} />
+          Invoices
+        </h1>
+        <button
+          onClick={() => setShowNew(true)}
+          className="px-4 py-2 text-sm text-white rounded-[6px] transition-all duration-200 hover:shadow-md"
+          style={{ backgroundColor: "#1a6bb5", boxShadow: "0 1px 3px rgba(26,107,181,0.3)" }}
+        >
+          + New Invoice
+        </button>
+      </div>
       <div className="overflow-x-auto rounded-[6px]" style={{ border: "1px solid #e5edf5" }}>
         <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
           <thead>
@@ -62,6 +90,12 @@ export default function InvoicesPage() {
           </tbody>
         </table>
       </div>
+
+      <NewInvoiceModal
+        open={showNew}
+        onClose={() => setShowNew(false)}
+        onCreated={refresh}
+      />
     </div>
   );
 }
